@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[14003,["/tv-dashboard/_next/static/chunks/3405cf88485d7c04.js","/tv-dashboard/_next/static/chunks/367871ea35d53b01.js"],"ViewportBoundary"]
+4:I[14003,["/tv-dashboard/_next/static/chunks/3405cf88485d7c04.js","/tv-dashboard/_next/static/chunks/367871ea35d53b01.js"],"MetadataBoundary"]
+5:"$Sreact.suspense"
+7:I[55215,["/tv-dashboard/_next/static/chunks/3405cf88485d7c04.js","/tv-dashboard/_next/static/chunks/367871ea35d53b01.js"],"IconMark"]
+0:{"buildId":"x0b2RriAQnxksAc0v9Dop","rsc":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
+3:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+6:[["$","title","0",{"children":"Tillster TV Dashboard"}],["$","meta","1",{"name":"description","content":"Proactive monitoring dashboard for BK-US & PLK-US"}],["$","link","2",{"rel":"icon","href":"/assets/favicon.ico"}],["$","$L7","3",{}]]
