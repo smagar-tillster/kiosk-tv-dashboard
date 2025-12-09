@@ -17,27 +17,33 @@ Real-time monitoring dashboard for Kiosk alerts and metrics from NewRelic. Displ
 ```
 tv-dashboard/
 ├── app/
-│   ├── page.tsx          # Main dashboard page
-│   ├── layout.tsx        # Root layout with fonts
-│   └── globals.css       # Global styles with shadcn theme
-├── components/
-│   ├── charts/           # Chart components
-│   │   ├── line-chart.tsx
-│   │   ├── bar-chart.tsx
+│   ├── api/                    # API routes
+│   │   └── newrelic/          # NewRelic proxy endpoint
+│   ├── map-dashboard/         # Map dashboard page
+│   │   └── page.tsx
+│   ├── _components/           # Reusable chart components
+│   │   ├── ConfigurableLineChart.tsx
+│   │   ├── ConfigurableBarChart.tsx
+│   │   ├── ConfigurableMapChart.tsx
 │   │   └── index.ts
-│   └── ui/               # UI components (shadcn-style)
-│       └── card.tsx
-├── lib/
-│   ├── connectors/       # Data source connectors
-│   │   ├── types.ts
-│   │   ├── mock-connector.ts
-│   │   ├── newrelic-connector.ts
+│   ├── _config/               # All configuration files
+│   │   ├── tenant-config.ts   # API keys & tenant configs
+│   │   ├── dashboard-config.ts
+│   │   ├── map.config.ts
 │   │   └── index.ts
-│   └── utils/
-│       └── cn.ts         # Class name utility
-├── next.config.ts        # Next.js config with static export
-└── package.json
+│   ├── _dtos/                 # Data Transfer Objects
+│   ├── _services/             # Business logic
+│   ├── _connectors/           # External API connectors
+│   ├── _queries/              # Query definitions
+│   ├── _utils/                # Utility functions
+│   ├── layout.tsx             # Root layout
+│   └── page.tsx               # Landing page
+├── lambda/                    # AWS Lambda function
+├── public/                    # Static assets
+└── out/                       # Static export output
 ```
+
+**Note:** Folders with `_` prefix are not routes (internal code only).
 
 ## Quick Start
 

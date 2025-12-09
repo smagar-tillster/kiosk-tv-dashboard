@@ -3,7 +3,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
-import { getCityCoordinates, stateAbbrToName } from '@/lib/config/city-coordinates';
+import { getCityCoordinates, stateAbbrToName } from '@/app/config/city-coordinates';
 
 interface AlertHeatmapProps {
   data: any[];
@@ -92,11 +92,12 @@ export function AlertHeatmap({ data }: AlertHeatmapProps) {
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
-        if (params.seriesType === 'scatter' && params.value && params.value[2]) {
+        if (!params || !params.name) return '';
+        if (params.componentSubType === 'effectScatter' && params.value && params.value[2]) {
           return `<strong>${params.name}</strong><br/>Alerts: ${params.value[2]}`;
         }
-        if (params.seriesType === 'map') {
-          return `<strong>${params.name}</strong><br/>Alerts: ${params.value || 0}`;
+        if (params.seriesType === 'geo') {
+          return `<strong>${params.name}</strong>`;
         }
         return params.name || '';
       },
@@ -164,18 +165,6 @@ export function AlertHeatmap({ data }: AlertHeatmapProps) {
       }))
     },
     series: [
-      {
-        name: 'State Alerts',
-        type: 'map',
-        geoIndex: 0,
-        data: stateData,
-        emphasis: {
-          label: {
-            show: true
-          }
-        },
-        z: 1
-      },
       {
         name: 'State Alerts Display',
         type: 'effectScatter',

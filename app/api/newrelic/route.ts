@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TENANT_CONFIG } from '@/lib/config/tenant-config';
+import { TENANT_CONFIG } from '@/app/config/tenant-config';
 
 const NEWRELIC_ENDPOINT = 'https://api.newrelic.com/graphql';
 
