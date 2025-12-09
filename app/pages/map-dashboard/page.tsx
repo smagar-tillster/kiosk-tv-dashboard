@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { KioskLocationMap } from '@/app/components';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
-import { TENANT_CONFIG } from '@/app/config/tenant-config';
+import { TENANT_CONFIG, DASHBOARD_CONFIG } from '@/app/config/tenant-config';
 import { RefreshCw } from 'lucide-react';
 
 export default function MapDashboard() {
@@ -13,6 +13,8 @@ export default function MapDashboard() {
 
   const fetchData = async () => {
     setRefreshing(true);
+    const startTime = new Date();
+    console.log(`[Map Dashboard Refresh] Started at ${startTime.toLocaleTimeString()}`);
     
     try {
       // Create services for both tenants
@@ -46,8 +48,15 @@ export default function MapDashboard() {
       console.log('Combined kiosk location data for map:', combinedData);
       setCombinedKioskData(combinedData);
       
+      const endTime = new Date();
+      const duration = ((endTime.getTime() - startTime.getTime()) / 1000).toFixed(2);
+      const online = combinedData.filter((item: any) => item.status === 'ONLINE').length;
+      const offline = combinedData.filter((item: any) => item.status === 'OFFLINE').length;
+      console.log(`[Map Dashboard Refresh] Completed at ${endTime.toLocaleTimeString()} (took ${duration}s)`);
+      console.log(`[Map Dashboard Stats] Total kiosks: ${combinedData.length}, Online: ${online}, Offline: ${offline}`);
+      
     } catch (error) {
-      console.error('Error fetching map data:', error);
+      console.error('[Map Dashboard Refresh] Failed:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -56,6 +65,16 @@ export default function MapDashboard() {
 
   useEffect(() => {
     fetchData();
+
+    // Set up auto-refresh if refresh button is disabled
+    if (!DASHBOARD_CONFIG.showRefreshButton) {
+      const intervalMs = DASHBOARD_CONFIG.autoRefreshMinutes * 60 * 1000;
+      const interval = setInterval(() => {
+        fetchData();
+      }, intervalMs);
+
+      return () => clearInterval(interval);
+    }
   }, []);
 
   const onlineCount = combinedKioskData.filter((item: any) => item.status === 'ONLINE').length;
@@ -65,14 +84,16 @@ export default function MapDashboard() {
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Floating Refresh Button */}
-      <button
-        onClick={fetchData}
-        disabled={refreshing}
-        className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg border border-gray-200"
-      >
-        <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-        {refreshing ? 'Refreshing...' : 'Refresh'}
-      </button>
+      {DASHBOARD_CONFIG.showRefreshButton && (
+        <button
+          onClick={fetchData}
+          disabled={refreshing}
+          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg border border-gray-200"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      )}
 
       {/* Title at Top */}
       <div className="px-4 pt-6 pb-2">

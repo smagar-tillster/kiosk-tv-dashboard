@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ConfigurableBarChart } from '@/app/components';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
-import { TENANT_CONFIG } from '@/app/config/tenant-config';
+import { TENANT_CONFIG, DASHBOARD_CONFIG } from '@/app/config/tenant-config';
 import { RefreshCw } from 'lucide-react';
 
 export default function AnalyticsDashboard() {
@@ -13,6 +13,8 @@ export default function AnalyticsDashboard() {
 
   const fetchData = async () => {
     setRefreshing(true);
+    const startTime = new Date();
+    console.log(`[EU Tenants Refresh] Started at ${startTime.toLocaleTimeString()}`);
     
     try {
       // Create service for BK-US tenant
@@ -28,8 +30,13 @@ export default function AnalyticsDashboard() {
       // Use any chart data you want (typeOfIssues, orderFailureTypes, etc.)
       setChartData(data.typeOfIssues);
       
+      const endTime = new Date();
+      const duration = ((endTime.getTime() - startTime.getTime()) / 1000).toFixed(2);
+      console.log(`[EU Tenants Refresh] Completed at ${endTime.toLocaleTimeString()} (took ${duration}s)`);
+      console.log(`[EU Tenants Stats] Chart data points: ${data.typeOfIssues?.length || 0}`);
+      
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('[EU Tenants Refresh] Failed:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -38,6 +45,16 @@ export default function AnalyticsDashboard() {
 
   useEffect(() => {
     fetchData();
+
+    // Set up auto-refresh if refresh button is disabled
+    if (!DASHBOARD_CONFIG.showRefreshButton) {
+      const intervalMs = DASHBOARD_CONFIG.autoRefreshMinutes * 60 * 1000;
+      const interval = setInterval(() => {
+        fetchData();
+      }, intervalMs);
+
+      return () => clearInterval(interval);
+    }
   }, []);
 
   return (
@@ -53,14 +70,16 @@ export default function AnalyticsDashboard() {
           </p>
         </div>
         
-        <button
-          onClick={fetchData}
-          disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
+        {DASHBOARD_CONFIG.showRefreshButton && (
+          <button
+            onClick={fetchData}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        )}
       </div>
 
       {/* Chart Container */}

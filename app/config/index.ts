@@ -15,7 +15,6 @@ export * from './map-dashboard.config';
 
 // App Configs
 export * from './tenant-config';
-export * from './dashboard-config';
 export * from './city-coordinates';
 
 // Registry of all pages

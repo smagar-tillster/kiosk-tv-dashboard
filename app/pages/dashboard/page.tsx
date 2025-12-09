@@ -97,6 +97,12 @@ export default function MainDashboard() {
 
   const fetchData = async () => {
     setRefreshing(true);
+    const startTime = new Date();
+    
+    // Simple test logs
+    console.log('=== DASHBOARD REFRESH START ===');
+    console.log(`[Dashboard Refresh] Started at ${startTime.toLocaleTimeString()}`);
+    
     try {
       const bkService = new DashboardDataService(
         TENANT_CONFIG.BKUS.accountId,
@@ -118,8 +124,13 @@ export default function MainDashboard() {
 
       setStats({ BKUS: bkData, PLKUS: plkData });
       setChartData({ BKUS: bkCharts, PLKUS: plkCharts });
+      
+      const endTime = new Date();
+      const duration = ((endTime.getTime() - startTime.getTime()) / 1000).toFixed(2);
+      console.log(`[Dashboard Refresh] Completed at ${endTime.toLocaleTimeString()} (took ${duration}s)`);
+      console.log(`[Dashboard Stats] BK-US: ${bkData.onlineKiosks}/${bkData.totalKiosks} online, PLK-US: ${plkData.onlineKiosks}/${plkData.totalKiosks} online`);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('[Dashboard Refresh] Failed:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -128,6 +139,16 @@ export default function MainDashboard() {
 
   useEffect(() => {
     fetchData();
+
+    // Set up auto-refresh if refresh button is disabled
+    if (!DASHBOARD_CONFIG.showRefreshButton) {
+      const intervalMs = DASHBOARD_CONFIG.autoRefreshMinutes * 60 * 1000;
+      const interval = setInterval(() => {
+        fetchData();
+      }, intervalMs);
+
+      return () => clearInterval(interval);
+    }
   }, []);
 
   const calculatePercentage = (online: number, total: number) => {

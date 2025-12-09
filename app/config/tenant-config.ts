@@ -12,16 +12,42 @@ export interface TenantConfig {
   apiKey: string;
 }
 
+/**
+ * Dashboard Configuration
+ * Controls UI features and auto-refresh behavior
+ */
 export interface DashboardConfig {
+  /**
+   * Show/hide the header section
+   */
   showHeader: boolean;
+  
+  /**
+   * Show/hide dark mode toggle
+   */
   showDarkMode: boolean;
+  
+  /**
+   * Enable/disable manual refresh button
+   * If false, dashboard will auto-refresh at the interval specified
+   */
   showRefreshButton: boolean;
+  
+  /**
+   * Auto-refresh interval in minutes
+   * Only applies when showRefreshButton is false
+   */
+  autoRefreshMinutes: number;
 }
 
 export const DASHBOARD_CONFIG: DashboardConfig = {
   showHeader: process.env.NEXT_PUBLIC_SHOW_HEADER !== 'false',
   showDarkMode: process.env.NEXT_PUBLIC_SHOW_DARK_MODE !== 'false',
-  showRefreshButton: process.env.NEXT_PUBLIC_SHOW_REFRESH !== 'false',
+  // Set to true to show manual refresh button (no auto-refresh)
+  // Set to false to hide button and enable auto-refresh
+  showRefreshButton: false, // Hardcoded: false (auto-refresh enabled)
+  // Auto-refresh interval (only used when showRefreshButton is false)
+  autoRefreshMinutes: Number(process.env.NEXT_PUBLIC_AUTO_REFRESH_MINUTES) || 15, // Default: 1 minute
 };
 
 export const TENANT_CONFIG = {
