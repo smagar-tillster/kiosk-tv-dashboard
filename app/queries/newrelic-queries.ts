@@ -50,7 +50,7 @@ export const NEWRELIC_QUERIES = {
       FROM KioskAlertEvent 
       select count(*) 
       where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
-      timeseries 1 day since 7 days ago until now limit max
+      timeseries 1 day SINCE last week UNTIL today limit max
     `,
 
     // Type of Issues (Heatmap/Bubble Map)
@@ -184,7 +184,7 @@ export const NEWRELIC_QUERIES = {
       FROM KioskAlertEvent 
       select count(*) 
       where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
-      timeseries 1 day since 7 days ago until now limit max
+      timeseries 1 day SINCE last week UNTIL today limit max
     `,
 
     // Type of Issues (Heatmap/Bubble Map)

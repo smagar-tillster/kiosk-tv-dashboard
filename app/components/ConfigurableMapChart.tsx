@@ -8,7 +8,7 @@ import {
   ZoomableGroup,
 } from 'react-simple-maps';
 import { MapChartConfig, DEFAULT_MAP_CHART_CONFIG } from '@/app/config';
-import { MapChartData, MapDataPoint } from '@/app/dtos/charts';
+import { MapChartData, MapDataPoint } from '@/app/dtos';
 
 interface ConfigurableMapChartProps {
   data: MapChartData | unknown[];
@@ -28,11 +28,13 @@ export function ConfigurableMapChart({ data, config }: ConfigurableMapChartProps
   
   if (Array.isArray(data)) {
     // Check if data has 'state' and 'alerts' properties (CombinedMapData DTO)
-    if (data.length > 0 && 'state' in data[0] && 'alerts' in data[0]) {
+    const firstItem = data[0] as any;
+    if (data.length > 0 && firstItem && 'state' in firstItem && 'alerts' in firstItem) {
       console.log('ConfigurableMapChart - Processing CombinedMapData DTO:', data);
       chartData = data.map((item: any) => ({
         state: String(item.state || ''),
         alerts: Number(item.alerts || 0),
+        value: Number(item.alerts || 0),
         city: '',
       }));
     } else {
@@ -83,15 +85,13 @@ export function ConfigurableMapChart({ data, config }: ConfigurableMapChartProps
     return stateDataMap.get(normalized);
   };
 
-  const height = typeof chartConfig.style?.height === 'number' 
-    ? chartConfig.style.height 
-    : 500;
-
-  return (
+  const height = typeof chartConfig.height === 'number' 
+    ? chartConfig.height
+    : 500;  return (
     <div 
       style={{ 
         height: `${height}px`,
-        width: chartConfig.style?.width || '100%',
+        width: chartConfig.width || '100%',
       }} 
       className="relative bg-white rounded-lg shadow"
     >
@@ -126,12 +126,6 @@ export function ConfigurableMapChart({ data, config }: ConfigurableMapChartProps
                     }}
                     onMouseLeave={() => {
                       setTooltipContent('');
-                    }}
-                    style={{
-                      hover: { 
-                        fill: chartConfig.hoverColor || '#9ca3af',
-                        cursor: chartConfig.clickable ? 'pointer' : 'default',
-                      },
                     }}
                   />
                 );

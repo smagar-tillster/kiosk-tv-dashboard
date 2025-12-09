@@ -2,7 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { BarChartConfig, DEFAULT_BAR_CHART_CONFIG } from '@/app/config';
-import { BarChartData, BarChartDataPoint } from '@/app/dtos/charts';
+import { BarChartData, BarChartDataPoint } from '@/app/dtos';
 
 interface ConfigurableBarChartProps {
   data: BarChartData | unknown[]; // Support both DTO and raw data
@@ -25,8 +25,8 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
 
   return (
     <ResponsiveContainer 
-      width={chartConfig.style?.width as any || '100%'} 
-      height={chartConfig.style?.height as any || '100%'}
+      width={chartConfig.width as any || '100%'} 
+      height={chartConfig.height as any || '100%'}
     >
       <BarChart 
         data={chartData} 

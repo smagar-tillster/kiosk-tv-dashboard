@@ -22,4 +22,4 @@ export type {
   BarChartData,
   MapChartData,
   HeatmapChartData,
-} from '@/app/dtos/charts';
+} from '@/app/dtos';

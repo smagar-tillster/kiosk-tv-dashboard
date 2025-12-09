@@ -1,8 +1,8 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LineChartConfig, DEFAULT_LINE_CHART_CONFIG } from '@/app/config';
-import { LineChartData, LineChartDataPoint } from '@/app/dtos/charts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChartConfig, DEFAULT_LINE_CHART_CONFIG, ChartAxisConfig } from '@/app/config';
+import { LineChartData, LineChartDataPoint } from '@/app/dtos';
 
 interface ConfigurableLineChartProps {
   data: LineChartData | unknown[]; // Support both DTO and raw data
@@ -19,13 +19,13 @@ export function ConfigurableLineChart({ data, config }: ConfigurableLineChartPro
     : data.data;
 
   const color = chartConfig.colors?.primary || '#3b82f6';
-  const xAxisConfig = chartConfig.xAxis || DEFAULT_LINE_CHART_CONFIG.xAxis || {};
-  const yAxisConfig = chartConfig.yAxis || DEFAULT_LINE_CHART_CONFIG.yAxis || {};
+  const xAxisConfig = (chartConfig.xAxis || DEFAULT_LINE_CHART_CONFIG.xAxis || {}) as ChartAxisConfig;
+  const yAxisConfig = (chartConfig.yAxis || DEFAULT_LINE_CHART_CONFIG.yAxis || {}) as ChartAxisConfig;
 
   return (
-    <ResponsiveContainer 
-      width={chartConfig.style?.width as any || '100%'} 
-      height={chartConfig.style?.height as any || '100%'}
+    <ResponsiveContainer
+      width={chartConfig.width as any || '100%'} 
+      height={chartConfig.height as any || '100%'}
     >
       <LineChart 
         data={chartData} 
@@ -80,15 +80,16 @@ export function ConfigurableLineChart({ data, config }: ConfigurableLineChartPro
 
 // Helper function to transform NewRelic data to DTO format
 function transformNewRelicData(rawData: unknown[]): LineChartDataPoint[] {
-  return rawData.map((item: Record<string, any>) => {
-    const timestamp = item.beginTimeSeconds * 1000;
+  return rawData.map((item) => {
+    const record = item as Record<string, any>;
+    const timestamp = record.beginTimeSeconds * 1000;
     const date = new Date(timestamp);
     const normalizedDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
     return {
       date: normalizedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
       timestamp: normalizedDate.getTime(),
-      value: item['count(*)'] || item.count || 0,
-      count: item['count(*)'] || item.count || 0,
+      value: record['count(*)'] || record.count || 0,
+      count: record['count(*)'] || record.count || 0,
     };
   }).sort((a, b) => a.timestamp - b.timestamp);
 }

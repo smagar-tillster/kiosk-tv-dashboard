@@ -3,7 +3,56 @@
  * Define dashboard pages with their charts and layouts
  */
 
-import { ChartConfig } from './line-chart.config';
+/**
+ * Base configuration for all chart types
+ */
+export interface BaseChartConfig {
+  // Display
+  title?: string;
+  description?: string;
+  responsive?: boolean;
+  
+  // Colors
+  colors?: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+    grid?: string;
+  };
+  
+  // Interactions
+  showTooltip?: boolean;
+  showLegend?: boolean;
+  animation?: boolean;
+  
+  // Dimensions
+  width?: string | number;
+  height?: string | number;
+  margin?: {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+  };
+}
+
+/**
+ * Axis configuration for charts
+ */
+export interface ChartAxisConfig {
+  show?: boolean;
+  showGrid?: boolean;
+  label?: string;
+  fontSize?: number;
+  fontWeight?: string | number;
+  color?: string;
+  tickCount?: number;
+  tickFormat?: string;
+  angle?: number;
+  width?: number;
+  dataKey?: string;
+}
 
 export interface PageStyleConfig {
   backgroundColor?: string;
@@ -15,7 +64,7 @@ export interface PageStyleConfig {
 
 export interface ChartLayoutItem {
   chartId: string;
-  config: ChartConfig;
+  config: any; // Can be LineChartConfig, BarChartConfig, MapChartConfig, etc.
   gridArea?: string;
   className?: string;
   dataSource?: {

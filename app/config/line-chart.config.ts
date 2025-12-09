@@ -16,11 +16,12 @@ export interface LineChartConfig extends BaseChartConfig {
   
   // Axes
   xAxis?: ChartAxisConfig & {
-    dataKey: string;
+    dataKey?: string;
     label?: string;
+    angle?: number;
   };
   yAxis?: ChartAxisConfig & {
-    dataKey: string;
+    dataKey?: string;
     label?: string;
     width?: number;
   };
