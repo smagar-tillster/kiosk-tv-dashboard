@@ -82,13 +82,13 @@ export default function MapDashboard() {
   const totalCount = combinedKioskData.length;
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-gray-50">
+    <div className="h-screen w-screen flex flex-col bg-gray-900">
       {/* Floating Refresh Button */}
       {DASHBOARD_CONFIG.showRefreshButton && (
         <button
           onClick={fetchData}
           disabled={refreshing}
-          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg border border-gray-200"
+          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg border border-gray-700"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           {refreshing ? 'Refreshing...' : 'Refresh'}
@@ -97,52 +97,72 @@ export default function MapDashboard() {
 
       {/* Title at Top */}
       <div className="px-4 pt-6 pb-2">
-        <h1 className="text-2xl font-bold text-gray-800 text-center">US Kiosk Status Map</h1>
+        <h1 className="text-2xl font-bold text-white text-center">US Kiosk Status Map</h1>
       </div>
 
       {/* Full Page Map */}
       <div className="flex-1 px-4 pb-4">
-        <div className="h-full w-full bg-white rounded-lg shadow relative">
+        <div className="h-full w-full bg-gray-800 rounded-lg shadow relative">
           <KioskLocationMap data={combinedKioskData} />
           
-          {/* Bottom Left Info Cards */}
-          <div className="absolute bottom-6 left-6 flex gap-4">
-            {/* Kiosk Info Card */}
-            <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-              <h2 className="text-base font-bold text-gray-800 mb-3">US Kiosk Status Map</h2>
-              <p className="text-sm text-gray-700 mb-2">Combined data for BK-US & PLK-US</p>
-              <div className="space-y-1 text-sm">
+          {/* Bottom Right Info Cards - Stacked Vertically */}
+          <div className="absolute bottom-6 right-6 flex flex-col gap-3 max-w-xs">
+            {/* US Kiosk Status Map Info Card */}
+            <div className="bg-gray-800 rounded-lg shadow-lg p-3 border border-gray-700">
+              <h2 className="text-sm font-bold text-white mb-2">US Kiosk Status Map</h2>
+              <p className="text-xs text-gray-300 mb-2">Combined data for BK-US & PLK-US</p>
+              <div className="space-y-1 text-xs">
                 <div className="flex justify-between gap-4">
-                  <span className="text-gray-600">Total Kiosks:</span>
-                  <span className="font-semibold text-gray-800">{totalCount}</span>
+                  <span className="text-gray-300">Total Kiosks:</span>
+                  <span className="font-semibold text-white">{totalCount}</span>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <span className="text-gray-600">Online:</span>
-                  <span className="font-semibold text-green-600">{onlineCount}</span>
+                  <span className="text-gray-300">Online:</span>
+                  <span className="font-semibold text-green-400">{onlineCount}</span>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <span className="text-gray-600">Offline:</span>
-                  <span className="font-semibold text-red-600">{offlineCount}</span>
+                  <span className="text-gray-300">Offline:</span>
+                  <span className="font-semibold text-red-400">{offlineCount}</span>
                 </div>
               </div>
             </div>
             
-            {/* Legends Card */}
-            <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-              {/* State Health Section */}
-              <h3 className="text-sm font-bold text-gray-700 mb-2">State Health</h3>
+            {/* Kiosk Status Legends Card */}
+            <div className="bg-gray-800 rounded-lg shadow-lg p-3 border border-gray-700">
+              {/* Kiosk Status Section */}
+              <h3 className="text-xs font-bold text-white mb-2">Kiosk Status</h3>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded" style={{ backgroundColor: '#dcfce7' }}></div>
-                  <span className="text-sm text-gray-700"><strong>Green:</strong> &lt; 5% offline</span>
+                  <div className="flex -space-x-1">
+                    <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-gray-800"></div>
+                    <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-gray-800"></div>
+                  </div>
+                  <span className="text-xs text-gray-300"><strong className="text-white">Mixed:</strong> Online & Offline</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded" style={{ backgroundColor: '#fed7aa' }}></div>
-                  <span className="text-sm text-gray-700"><strong>Amber:</strong> 5-10% offline</span>
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-xs text-gray-300"><strong className="text-white">Green:</strong> All Online</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded" style={{ backgroundColor: '#fecaca' }}></div>
-                  <span className="text-sm text-gray-700"><strong>Red:</strong> &gt; 10% offline</span>
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-xs text-gray-300"><strong className="text-white">Red:</strong> All Offline</span>
+                </div>
+              </div>
+              
+              {/* State Health Section */}
+              <h3 className="text-xs font-bold text-white mb-1.5 mt-3">State Health</h3>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: '#dcfce7' }}></div>
+                  <span className="text-xs text-gray-300"><strong className="text-white">Green:</strong> &lt; 5% offline</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fed7aa' }}></div>
+                  <span className="text-xs text-gray-300"><strong className="text-white">Amber:</strong> 5-10% offline</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fecaca' }}></div>
+                  <span className="text-xs text-gray-300"><strong className="text-white">Red:</strong> &gt; 10% offline</span>
                 </div>
               </div>
             </div>

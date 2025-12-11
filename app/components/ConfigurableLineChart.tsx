@@ -31,33 +31,30 @@ export function ConfigurableLineChart({ data, config }: ConfigurableLineChartPro
         data={chartData} 
         margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
       >
-        {xAxisConfig.showGrid !== false && (
-          <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.colors?.grid || '#f0f0f0'} />
-        )}
         <XAxis 
           dataKey={xAxisConfig.dataKey || 'date'}
           tick={{ 
             fontSize: xAxisConfig.fontSize || 14, 
             fontWeight: xAxisConfig.fontWeight || 'bold',
-            fill: xAxisConfig.color,
+            fill: xAxisConfig.color || '#9ca3af',
           }} 
           angle={xAxisConfig.angle || -45} 
           textAnchor="end" 
           height={60}
-          label={xAxisConfig.label ? { value: xAxisConfig.label, position: 'insideBottom' } : undefined}
+          label={xAxisConfig.label ? { value: xAxisConfig.label, position: 'insideBottom', fill: '#9ca3af' } : undefined}
         />
         <YAxis 
           dataKey={yAxisConfig.dataKey}
           tick={{ 
             fontSize: yAxisConfig.fontSize || 14, 
             fontWeight: yAxisConfig.fontWeight || 'bold',
-            fill: yAxisConfig.color,
+            fill: yAxisConfig.color || '#9ca3af',
           }} 
           width={yAxisConfig.width || 50}
-          label={yAxisConfig.label ? { value: yAxisConfig.label, angle: -90, position: 'insideLeft' } : undefined}
+          label={yAxisConfig.label ? { value: yAxisConfig.label, angle: -90, position: 'insideLeft', fill: '#9ca3af' } : undefined}
         />
         {chartConfig.showTooltip !== false && (
-          <Tooltip contentStyle={{ fontWeight: 'bold' }} />
+          <Tooltip contentStyle={{ fontWeight: 'bold', backgroundColor: '#1f2937', border: '1px solid #374151', color: '#e5e7eb' }} />
         )}
         <Line 
           type={chartConfig.smooth ? 'monotone' : 'linear'}
@@ -68,7 +65,7 @@ export function ConfigurableLineChart({ data, config }: ConfigurableLineChartPro
           label={chartConfig.showLabels !== false ? { 
             position: 'top', 
             fontSize: 11, 
-            fill: '#000', 
+            fill: '#d1d5db', 
             fontWeight: 'bold' 
           } : undefined}
           animationDuration={chartConfig.animationDuration}

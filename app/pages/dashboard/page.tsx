@@ -16,46 +16,43 @@ interface StatCardProps {
   loading: boolean;
 }
 
-function StatCard({ title, value, subtitle, icon, variant, loading }: StatCardProps) {
+function StatCard({ title, value, subtitle, variant, loading }: StatCardProps) {
   const bgColor = variant === 'bk' ? 'bg-gradient-to-br from-emerald-50 to-teal-50' : 'bg-gradient-to-br from-orange-50 to-amber-50';
   const textColor = variant === 'bk' ? 'text-emerald-700' : 'text-orange-700';
   const borderColor = variant === 'bk' ? 'border-emerald-200' : 'border-orange-200';
-  
   // Check if value is a percentage for special styling
   const isPercentage = value.includes('%');
   const percentValue = isPercentage ? parseFloat(value.replace('%', '')) : null;
   const isHealthy = percentValue !== null && percentValue >= 90;
-  
   return (
-    <div className={`${bgColor} rounded-xl p-4 border-2 ${borderColor} shadow-sm hover:shadow-md transition-shadow`}>
-      <div className="flex flex-col items-center justify-center h-full min-h-[120px]">
-        <p className={`text-xs font-semibold ${textColor} mb-3 uppercase tracking-wide text-center`}>{title}</p>
+    <div className={`${bgColor} rounded-xl p-4 border-2 ${borderColor} shadow-sm hover:shadow-md transition-shadow min-h-[140px] flex flex-col justify-center`}>
+      <div className="flex flex-col items-center justify-center h-full py-2">
+        <p className={`text-base font-bold ${textColor} mb-2 uppercase tracking-wide text-center`}>{title}</p>
         {loading ? (
-          <div className="h-16 w-20 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-20 w-24 bg-gray-200 animate-pulse rounded"></div>
         ) : (
           <div className="flex items-center justify-center gap-3">
             {isPercentage ? (
               <>
                 <div className={`
                   flex items-center justify-center
-                  w-16 h-16 rounded-full
+                  w-20 h-20 rounded-full
                   ${isHealthy 
                     ? 'bg-green-500' 
                     : 'bg-red-500 animate-pulse shadow-lg shadow-red-500/50'
                   }
                 `}>
-                  <span className="text-xl font-bold text-white">{value}</span>
+                  <span className="text-4xl font-extrabold text-white">{value}</span>
                 </div>
                 {subtitle && (
                   <p className={`text-2xl font-bold ${textColor}`}>{subtitle}</p>
                 )}
               </>
             ) : (
-              <p className={`text-2xl font-bold ${textColor} text-center`}>{value}</p>
+              <p className={`text-4xl font-extrabold ${textColor} text-center`}>{value}</p>
             )}
           </div>
         )}
-        <div className={`${textColor} p-2 bg-white/50 rounded-lg mt-3`}>{icon}</div>
       </div>
     </div>
   );
@@ -157,25 +154,25 @@ export default function MainDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 transition-colors">
+    <div className="h-screen bg-gray-900 transition-colors overflow-hidden">
       {/* Floating Refresh Button */}
       {DASHBOARD_CONFIG.showRefreshButton && (
         <button
           onClick={fetchData}
           disabled={refreshing}
-          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg border border-gray-200"
+          className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg border border-gray-700"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           {refreshing ? 'Refreshing...' : 'Refresh'}
         </button>
       )}
 
-      <div className="p-6">
-        <div className="grid grid-cols-2 gap-8">
+      <div className="h-full p-4">
+        <div className="h-full grid grid-cols-2 gap-4">
           {/* BK-US Column */}
-          <div className="space-y-6">
+          <div className="flex flex-col space-y-3">
             {/* BK-US Header with Logo */}
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 shadow-lg">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white">
                   <Image src="/bk-us.png" alt="Burger King" width={56} height={56} className="object-contain" />
@@ -188,25 +185,25 @@ export default function MainDashboard() {
             </div>
 
             {/* Row 1: Stats */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
-                value={`${stats.BKUS.totalStores} (${stats.BKUS.totalKiosks})`}
+                value={`${stats.BKUS.totalStores} (${stats.BKUS.totalKiosks || 0})`}
                 icon={<Store className="h-5 w-5" />}
                 variant="bk"
                 loading={loading}
               />
               <StatCard
-                title="Online Store (Kiosk)"
-                value={`${calculatePercentage(stats.BKUS.onlineStores, stats.BKUS.totalStores)}%`}
-                subtitle={`${stats.BKUS.onlineStores} (${stats.BKUS.onlineKiosks})`}
+                title="Online Kiosks"
+                value={`${calculatePercentage(stats.BKUS.onlineKiosks, stats.BKUS.totalKiosks || 0)}%`}
+                subtitle={`${stats.BKUS.onlineKiosks} / ${stats.BKUS.totalKiosks || 0}`}
                 icon={<Activity className="h-5 w-5" />}
                 variant="bk"
                 loading={loading}
               />
               <StatCard
-                title="Offline Store (Kiosk)"
-                value={`${stats.BKUS.offlineStores} (${stats.BKUS.offlineKiosks})`}
+                title="Offline Kiosks"
+                value={`${stats.BKUS.offlineKiosks}`}
                 icon={<Server className="h-5 w-5" />}
                 variant="bk"
                 loading={loading}
@@ -214,20 +211,20 @@ export default function MainDashboard() {
             </div>
 
             {/* Row 2: US Map */}
-            <div className="bg-white rounded-xl border-2 border-emerald-200 shadow-lg overflow-hidden">
-              <div className="p-4 border-b border-emerald-100">
-                <h3 className="text-lg font-bold text-emerald-700">Order Failure Heatmap (Today)</h3>
+            <div className="bg-gray-800 rounded-xl border-2 border-emerald-600 shadow-lg overflow-hidden flex-1">
+              <div className="px-3 py-2 border-b border-emerald-600">
+                <h3 className="text-base font-bold text-emerald-400">Order Failure Map (Today)</h3>
               </div>
-              <div className="p-4" style={{ height: '400px' }}>
+              <div className="p-3 h-[calc(100%-48px)]">
                 <AlertHeatmap data={chartData.BKUS.alertHeatmap} />
               </div>
             </div>
 
             {/* Row 3: Charts */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white  rounded-xl border-2 border-emerald-200  shadow-lg p-4">
-                <h3 className="text-sm font-bold mb-3 text-emerald-700 ">Order Failure Trend (1 Week)</h3>
-                <div style={{ height: '250px' }}>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-gray-800 rounded-xl border-2 border-emerald-600 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-emerald-400">Order Failure Trend (1 Week)</h3>
+                <div className="h-[200px]">
                   {chartData.BKUS.orderFailureTrend.length > 0 ? (
                     <ConfigurableLineChart
                       config={{ title: 'BK-US Order Failure Trend', colors: { primary: '#10b981' } }}
@@ -241,9 +238,9 @@ export default function MainDashboard() {
                 </div>
               </div>
 
-              <div className="bg-white  rounded-xl border-2 border-emerald-200  shadow-lg p-4">
-                <h3 className="text-sm font-bold mb-3 text-emerald-700 ">Order Failure Types (1 Week)</h3>
-                <div style={{ height: '250px' }}>
+              <div className="bg-gray-800 rounded-xl border-2 border-emerald-600 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-emerald-400">Order Failure Types (1 Week)</h3>
+                <div className="h-[200px]">
                   {chartData.BKUS.orderFailureTypes.length > 0 ? (
                     <ConfigurableBarChart
                       config={{ title: 'BK-US Order Failure Types', colors: { primary: '#10b981' }, orientation: 'horizontal' }}
@@ -260,11 +257,11 @@ export default function MainDashboard() {
           </div>
 
           {/* PLK-US Column */}
-          <div className="space-y-6">
+          <div className="flex flex-col space-y-3">
             {/* PLK-US Header with Logo and Background */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 shadow-lg">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white">
+                <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center p-1">
                   <Image src="/plk-us.png" alt="Popeyes" width={56} height={56} className="object-contain" />
                 </div>
                 <div>
@@ -275,25 +272,25 @@ export default function MainDashboard() {
             </div>
 
             {/* Row 1: Stats */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
-                value={`${stats.PLKUS.totalStores} (${stats.PLKUS.totalKiosks})`}
+                value={`${stats.PLKUS.totalStores} (${stats.PLKUS.totalKiosks || 0})`}
                 icon={<Store className="h-5 w-5" />}
                 variant="plk"
                 loading={loading}
               />
               <StatCard
-                title="Online Store (Kiosk)"
-                value={`${calculatePercentage(stats.PLKUS.onlineStores, stats.PLKUS.totalStores)}%`}
-                subtitle={`${stats.PLKUS.onlineStores} (${stats.PLKUS.onlineKiosks})`}
+                title="Online Kiosks"
+                value={`${calculatePercentage(stats.PLKUS.onlineKiosks, stats.PLKUS.totalKiosks || 0)}%`}
+                subtitle={`${stats.PLKUS.onlineKiosks} / ${stats.PLKUS.totalKiosks || 0}`}
                 icon={<Activity className="h-5 w-5" />}
                 variant="plk"
                 loading={loading}
               />
               <StatCard
-                title="Offline Store (Kiosk)"
-                value={`${stats.PLKUS.offlineStores} (${stats.PLKUS.offlineKiosks})`}
+                title="Offline Kiosks"
+                value={`${stats.PLKUS.offlineKiosks}`}
                 icon={<Server className="h-5 w-5" />}
                 variant="plk"
                 loading={loading}
@@ -301,20 +298,20 @@ export default function MainDashboard() {
             </div>
 
             {/* Row 2: US Map */}
-            <div className="bg-white  rounded-xl border-2 border-orange-200  shadow-lg overflow-hidden">
-              <div className="p-4 border-b border-orange-100">
-                <h3 className="text-lg font-bold text-orange-700">Order Failure Heatmap (Today)</h3>
+            <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg overflow-hidden flex-1">
+              <div className="px-3 py-2 border-b border-orange-600">
+                <h3 className="text-base font-bold text-orange-400">Order Failure Map (Today)</h3>
               </div>
-              <div className="p-4" style={{ height: '400px' }}>
+              <div className="p-3 h-[calc(100%-48px)]">
                 <AlertHeatmap data={chartData.PLKUS.alertHeatmap} />
               </div>
             </div>
 
             {/* Row 3: Charts */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white  rounded-xl border-2 border-orange-200  shadow-lg p-4">
-                <h3 className="text-sm font-bold mb-3 text-orange-700 ">Order Failure Trend (1 Week)</h3>
-                <div style={{ height: '250px' }}>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Trend (1 Week)</h3>
+                <div className="h-[200px]">
                   {chartData.PLKUS.orderFailureTrend.length > 0 ? (
                     <ConfigurableLineChart
                       config={{ title: 'PLK-US Order Failure Trend', colors: { primary: '#f97316' } }}
@@ -328,9 +325,9 @@ export default function MainDashboard() {
                 </div>
               </div>
 
-              <div className="bg-white  rounded-xl border-2 border-orange-200  shadow-lg p-4">
-                <h3 className="text-sm font-bold mb-3 text-orange-700 ">Order Failure Types (1 Week)</h3>
-                <div style={{ height: '250px' }}>
+              <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Types (1 Week)</h3>
+                <div className="h-[200px]">
                   {chartData.PLKUS.orderFailureTypes.length > 0 ? (
                     <ConfigurableBarChart
                       config={{ title: 'PLK-US Order Failure Types', colors: { primary: '#f97316' }, orientation: 'horizontal' }}

@@ -58,14 +58,14 @@ export default function AnalyticsDashboard() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-900">
       {/* Header */}
-      <div className="flex justify-between items-center px-6 py-4 bg-white border-b">
+      <div className="flex justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: '#f97316' }}>
             Analytics Dashboard
           </h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-400">
             Custom analytics view for BK-US
           </p>
         </div>
@@ -84,8 +84,8 @@ export default function AnalyticsDashboard() {
 
       {/* Chart Container */}
       <div className="flex-1 p-6">
-        <div className="h-full bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
+        <div className="h-full bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4 text-white">
             Type of Issues
           </h2>
           

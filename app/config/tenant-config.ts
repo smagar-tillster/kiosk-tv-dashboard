@@ -38,6 +38,12 @@ export interface DashboardConfig {
    * Only applies when showRefreshButton is false
    */
   autoRefreshMinutes: number;
+  
+  /**
+   * Default theme mode
+   * 'light' | 'dark'
+   */
+  defaultTheme: 'light' | 'dark';
 }
 
 export const DASHBOARD_CONFIG: DashboardConfig = {
@@ -48,6 +54,8 @@ export const DASHBOARD_CONFIG: DashboardConfig = {
   showRefreshButton: false, // Hardcoded: false (auto-refresh enabled)
   // Auto-refresh interval (only used when showRefreshButton is false)
   autoRefreshMinutes: Number(process.env.NEXT_PUBLIC_AUTO_REFRESH_MINUTES) || 15, // Default: 1 minute
+  // Default theme: 'light' or 'dark'
+  defaultTheme: (process.env.NEXT_PUBLIC_DEFAULT_THEME as 'light' | 'dark') || 'dark',
 };
 
 export const TENANT_CONFIG = {

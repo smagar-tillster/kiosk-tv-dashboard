@@ -49,8 +49,9 @@ export class DashboardDataService {
         this.executeQuery(queries.totalKiosks),
       ]);
 
-      const stores = storesResponse[0]?.stores || 0;
-      const kiosks = kiosksResponse[0]?.kiosks || 0;
+      console.log('[DEBUG] kiosksResponse:', JSON.stringify(kiosksResponse));
+      const stores = storesResponse[0]?.["uniqueCount.storeName"] || 0;
+      const kiosks = kiosksResponse[0]?.["uniqueCount.concat(storeName, kioskName)"] || 0;
 
       return { stores, kiosks };
     } catch (error) {

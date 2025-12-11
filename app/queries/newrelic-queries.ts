@@ -8,16 +8,12 @@ export const NEWRELIC_QUERIES = {
   BKUS: {
     // Total Stores Count
     totalStores: `
-      from SystemSample 
-      select uniqueCount(substring(fullHostname, 1, length(fullHostname) - 2)) as 'stores' 
-      since 1 month ago
+      from KioskStatusEvent select uniqueCount(storeName) since 1 month ago limit max
     `,
     
     // Total Kiosks Count
     totalKiosks: `
-      from SystemSample 
-      select uniqueCount(fullHostname) as 'kiosks' 
-      since 1 month ago
+      from KioskStatusEvent select uniqueCount(concat(storeName, kioskName)) since 1 month ago limit max
     `,
     
     // Online and Offline Stores
@@ -142,16 +138,12 @@ export const NEWRELIC_QUERIES = {
   PLKUS: {
     // Total Stores Count
     totalStores: `
-      from SystemSample 
-      select uniqueCount(substring(fullHostname, 1, length(fullHostname) - 2)) as 'stores' 
-      since 1 month ago
+      from KioskStatusEvent select uniqueCount(storeName) since 1 month ago limit max
     `,
     
     // Total Kiosks Count
     totalKiosks: `
-      from SystemSample 
-      select uniqueCount(fullHostname) as 'kiosks' 
-      since 1 month ago
+       from KioskStatusEvent select uniqueCount(concat(storeName, kioskName)) since 1 month ago limit max
     `,
     
     // Online and Offline Stores

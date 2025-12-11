@@ -116,7 +116,7 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
       .filter(([_, data]) => data.onlineCount > 0)
       .map(([state, data]) => ({
         name: state,
-        value: [data.lng - 1.5, data.lat, data.onlineCount], // Offset left
+        value: [data.lng - 0.8, data.lat, data.onlineCount], // Offset left
         total: data.onlineCount + data.offlineCount
       }));
     
@@ -125,7 +125,7 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
       .filter(([_, data]) => data.offlineCount > 0)
       .map(([state, data]) => ({
         name: state,
-        value: [data.lng + 1.5, data.lat, data.offlineCount], // Offset right
+        value: [data.lng + 0.8, data.lat, data.offlineCount], // Offset right
         total: data.onlineCount + data.offlineCount
       }));
     

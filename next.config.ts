@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'export',
-  basePath: '/tv-dashboard', // For GitHub Pages deployment
+  basePath: process.env.NODE_ENV === 'production' ? '/kiosk-tv-dashboard' : '', // Only use basePath for production build
   images: {
     unoptimized: true,
   },

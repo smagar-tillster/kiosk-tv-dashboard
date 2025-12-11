@@ -2,20 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ConfigurableLineChart, ConfigurableBarChart, AlertHeatmap } from '@/app/components';
+import { ConfigurableLineChart, ConfigurableBarChart, AlertHeatmap, KioskLocationMap } from '@/app/components';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
 import { TENANT_CONFIG, DASHBOARD_CONFIG } from '@/app/config/tenant-config';
-import { RefreshCw, Activity, Server, Store } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
   value: string;
   subtitle?: string;
-  variant: 'plk';
   loading: boolean;
 }
 
-function StatCard({ title, value, subtitle, variant, loading }: StatCardProps) {
+function StatCard({ title, value, subtitle, loading }: StatCardProps) {
   const bgColor = 'bg-gradient-to-br from-orange-50 to-amber-50';
   const textColor = 'text-orange-700';
   const borderColor = 'border-orange-200';
@@ -77,10 +76,11 @@ export default function PLKUSDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({ totalStores: 0, totalKiosks: 0, onlineStores: 0, offlineStores: 0, onlineKiosks: 0, offlineKiosks: 0 });
   const [chartData, setChartData] = useState<ChartData>({ orderFailureTrend: [], typeOfIssues: [], orderFailureTypes: [], alertHeatmap: [] });
+  const [plkKioskData, setPlkKioskData] = useState<unknown[]>([]);
 
   const fetchData = async () => {
     setRefreshing(true);
-    const startTime = new Date();
+    // const startTime = new Date();
     try {
       const plkService = new DashboardDataService(
         TENANT_CONFIG.PLKUS.accountId,
@@ -88,13 +88,15 @@ export default function PLKUSDashboard() {
         'PLKUS'
       );
 
-      const [plkStats, plkCharts] = await Promise.all([
+      const [plkStats, plkCharts, plkLocations] = await Promise.all([
         plkService.fetchDashboardData('PLKUS'),
         plkService.fetchChartData('PLKUS'),
+        plkService.fetchKioskLocations('PLKUS'),
       ]);
 
       setStats(plkStats);
       setChartData(plkCharts);
+      setPlkKioskData(plkLocations || []);
     } catch (error) {
       console.error('[PLK-US Dashboard Refresh] Failed:', error);
     } finally {
@@ -151,12 +153,12 @@ export default function PLKUSDashboard() {
 
           {/* Row 1: Six Stat Cards */}
           <div className="grid grid-cols-3 gap-3 items-stretch">
-            <StatCard title="Total Store (Kiosk)" value={`${stats.totalStores} (${stats.totalKiosks || 0})`} icon={<Store className="h-5 w-5" />} variant="plk" loading={loading} />
-            <StatCard title="Online Kiosks" value={`${calculatePercentage(stats.onlineKiosks, stats.totalKiosks || 0)}%`} subtitle={`${stats.onlineKiosks} / ${stats.totalKiosks || 0}`} icon={<Activity className="h-5 w-5" />} variant="plk" loading={loading} />
-            <StatCard title="Offline Kiosks" value={`${stats.offlineKiosks}`} icon={<Server className="h-5 w-5" />} variant="plk" loading={loading} />
-            <StatCard title="Disconnected Kiosks" value={`Coming soon`} icon={<Server className="h-5 w-5" />} variant="plk" loading={false} />
-            <StatCard title="Coming soon" value={`0`} icon={<Server className="h-5 w-5" />} variant="plk" loading={false} />
-            <StatCard title="Coming soon" value={`0`} icon={<Server className="h-5 w-5" />} variant="plk" loading={false} />
+            <StatCard title="Total Store (Kiosk)" value={`${stats.totalStores} (${stats.totalKiosks || 0})`} loading={loading} />
+            <StatCard title="Online Kiosks" value={`${calculatePercentage(stats.onlineKiosks, stats.totalKiosks || 0)}%`} subtitle={`${stats.onlineKiosks} / ${stats.totalKiosks || 0}`} loading={loading} />
+            <StatCard title="Offline Kiosks" value={`${stats.offlineKiosks}`} loading={loading} />
+            <StatCard title="Disconnected Kiosks" value={`Coming soon`} loading={false} />
+            <StatCard title="Coming soon" value={`0`} loading={false} />
+            <StatCard title="Coming soon" value={`0`} loading={false} />
           </div>
 
           {/* Row 2: Order Failure Today + PLK-US Online/Offline Map */}
@@ -170,10 +172,13 @@ export default function PLKUSDashboard() {
             <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
               <h3 className="text-sm font-bold mb-2 text-orange-400">PLK-US Kiosk Status (Online/Offline)</h3>
               <div className="h-[220px]">
-                {/* TODO: Implement PLK-US only online/offline map using KioskLocationMap with PLK-US data */}
-                <div className="h-full flex items-center justify-center bg-gray-50 rounded">
-                  <div className="text-gray-600">Coming soon</div>
-                </div>
+                {plkKioskData.length > 0 ? (
+                  <KioskLocationMap data={plkKioskData} />
+                ) : (
+                  <div className="h-full flex items-center justify-center bg-gray-50 rounded">
+                    <div className="text-gray-600">Loading map...</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

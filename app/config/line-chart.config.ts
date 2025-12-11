@@ -38,7 +38,7 @@ export const DEFAULT_LINE_CHART_CONFIG: Partial<LineChartConfig> = {
   lineWidth: 2,
   showDots: true,
   dotRadius: 3,
-  smooth: false,
+  smooth: true,
   showLabels: true,
   xAxis: {
     fontSize: 11,

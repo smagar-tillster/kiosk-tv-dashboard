@@ -31,39 +31,36 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
       <BarChart 
         data={chartData} 
         layout={isHorizontal ? 'vertical' : 'horizontal'}
-        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
         barGap={chartConfig.barGap}
         barCategoryGap={chartConfig.barCategoryGap}
       >
-        {xAxisConfig.showGrid !== false && (
-          <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.colors?.grid || '#f0f0f0'} />
-        )}
         <XAxis 
           type={isHorizontal ? 'number' : 'category'}
           dataKey={isHorizontal ? undefined : (xAxisConfig.dataKey || 'type')}
           tick={{ 
             fontSize: xAxisConfig.fontSize || 14, 
             fontWeight: xAxisConfig.fontWeight || 'bold',
-            fill: xAxisConfig.color,
+            fill: xAxisConfig.color || '#9ca3af',
           }}
           angle={xAxisConfig.angle}
-          label={xAxisConfig.label ? { value: xAxisConfig.label, position: 'insideBottom' } : undefined}
+          label={xAxisConfig.label ? { value: xAxisConfig.label, position: 'insideBottom', fill: '#9ca3af' } : undefined}
         />
         <YAxis 
           type={isHorizontal ? 'category' : 'number'}
           dataKey={isHorizontal ? (yAxisConfig.dataKey || 'type') : undefined}
           tick={{ 
-            fontSize: yAxisConfig.fontSize || 14, 
+            fontSize: yAxisConfig.fontSize || 12, 
             fontWeight: yAxisConfig.fontWeight || 'bold',
-            fill: yAxisConfig.color,
+            fill: yAxisConfig.color || '#9ca3af',
           }} 
-          width={yAxisConfig.width || 180}
-          label={yAxisConfig.label ? { value: yAxisConfig.label, angle: -90, position: 'insideLeft' } : undefined}
+          width={yAxisConfig.width || 220}
+          label={yAxisConfig.label ? { value: yAxisConfig.label, angle: -90, position: 'insideLeft', fill: '#9ca3af' } : undefined}
         />
         {chartConfig.showTooltip !== false && (
           <Tooltip 
-            contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
-            labelStyle={{ color: '#333', fontWeight: 'bold' }}
+            contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
+            labelStyle={{ color: '#e5e7eb', fontWeight: 'bold' }}
           />
         )}
         <Bar 
@@ -73,7 +70,7 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
           label={chartConfig.showLabels !== false ? { 
             position: chartConfig.labelPosition || 'right', 
             fontSize: 14,
-            fill: '#333',
+            fill: '#d1d5db',
             fontWeight: 'bold'
           } : undefined}
         />
