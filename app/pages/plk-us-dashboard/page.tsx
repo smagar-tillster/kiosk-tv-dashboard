@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ConfigurableLineChart, ConfigurableBarChart, AlertHeatmap, KioskLocationMap } from '@/app/components';
+import { ConfigurableLineChart, ConfigurableBarChart, AlertHeatmap } from '@/app/components';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
 import { TENANT_CONFIG, DASHBOARD_CONFIG } from '@/app/config/tenant-config';
 import { RefreshCw } from 'lucide-react';
@@ -76,7 +76,6 @@ export default function PLKUSDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({ totalStores: 0, totalKiosks: 0, onlineStores: 0, offlineStores: 0, onlineKiosks: 0, offlineKiosks: 0 });
   const [chartData, setChartData] = useState<ChartData>({ orderFailureTrend: [], typeOfIssues: [], orderFailureTypes: [], alertHeatmap: [] });
-  const [plkKioskData, setPlkKioskData] = useState<unknown[]>([]);
 
   const fetchData = async () => {
     setRefreshing(true);
@@ -88,15 +87,13 @@ export default function PLKUSDashboard() {
         'PLKUS'
       );
 
-      const [plkStats, plkCharts, plkLocations] = await Promise.all([
+      const [plkStats, plkCharts] = await Promise.all([
         plkService.fetchDashboardData('PLKUS'),
         plkService.fetchChartData('PLKUS'),
-        plkService.fetchKioskLocations('PLKUS'),
       ]);
 
       setStats(plkStats);
       setChartData(plkCharts);
-      setPlkKioskData(plkLocations || []);
     } catch (error) {
       console.error('[PLK-US Dashboard Refresh] Failed:', error);
     } finally {
@@ -139,7 +136,7 @@ export default function PLKUSDashboard() {
       )}
 
       <div className="h-full p-4">
-        <div className="h-full grid grid-cols-1 gap-4">
+        <div className="flex flex-col space-y-3 h-full">
           {/* Header */}
           <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-3 shadow-lg">
             <div className="flex items-center gap-3">
@@ -152,7 +149,7 @@ export default function PLKUSDashboard() {
           </div>
 
           {/* Row 1: Six Stat Cards */}
-          <div className="grid grid-cols-3 gap-3 items-stretch">
+          <div className="grid grid-cols-6 gap-3 items-stretch">
             <StatCard title="Total Store (Kiosk)" value={`${stats.totalStores} (${stats.totalKiosks || 0})`} loading={loading} />
             <StatCard title="Online Kiosks" value={`${calculatePercentage(stats.onlineKiosks, stats.totalKiosks || 0)}%`} subtitle={`${stats.onlineKiosks} / ${stats.totalKiosks || 0}`} loading={loading} />
             <StatCard title="Offline Kiosks" value={`${stats.offlineKiosks}`} loading={loading} />
@@ -161,30 +158,18 @@ export default function PLKUSDashboard() {
             <StatCard title="Coming soon" value={`0`} loading={false} />
           </div>
 
-          {/* Row 2: Order Failure Today + PLK-US Online/Offline Map */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
-              <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Map (Today)</h3>
-              <div className="h-[220px]">
-                <AlertHeatmap data={chartData.alertHeatmap} />
-              </div>
+          {/* Row 2: Two Maps */}
+          <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg overflow-hidden flex-1">
+            <div className="px-3 py-2 border-b border-orange-600">
+              <h3 className="text-base font-bold text-orange-400">Order Failure Map (Today)</h3>
             </div>
-            <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
-              <h3 className="text-sm font-bold mb-2 text-orange-400">PLK-US Kiosk Status (Online/Offline)</h3>
-              <div className="h-[220px]">
-                {plkKioskData.length > 0 ? (
-                  <KioskLocationMap data={plkKioskData} />
-                ) : (
-                  <div className="h-full flex items-center justify-center bg-gray-50 rounded">
-                    <div className="text-gray-600">Loading map...</div>
-                  </div>
-                )}
-              </div>
+            <div className="p-3 h-[calc(100%-48px)]">
+              <AlertHeatmap data={chartData.alertHeatmap} />
             </div>
           </div>
 
-          {/* Row 3: Charts */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Row 3: Four Charts */}
+          <div className="grid grid-cols-2 gap-2">
             <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
               <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Trend (1 Week)</h3>
               <div className="h-[200px]">
@@ -198,10 +183,10 @@ export default function PLKUSDashboard() {
               </div>
             </div>
             <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
-              <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Types</h3>
+              <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Types (1 Week)</h3>
               <div className="h-[200px]">
                 {chartData.orderFailureTypes.length > 0 ? (
-                  <ConfigurableBarChart config={{ title: 'PLK-US Order Failure Types', colors: { primary: '#f97316' } }} data={chartData.orderFailureTypes} />
+                  <ConfigurableBarChart config={{ title: 'PLK-US Order Failure Types', colors: { primary: '#f97316' }, orientation: 'horizontal' }} data={chartData.orderFailureTypes} />
                 ) : (
                   <div className="h-full flex items-center justify-center bg-gray-50 rounded">
                     <div className="text-gray-600">Loading chart...</div>
