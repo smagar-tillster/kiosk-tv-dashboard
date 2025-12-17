@@ -111,17 +111,17 @@ export function AlertHeatmap({ data }: AlertHeatmapProps) {
       text: ['High', 'Low'],
       realtime: false,
       calculable: false,
-      orient: 'horizontal',
+      orient: 'vertical',
       inRange: {
         color: ['#e0f3e0', '#FFE5E5', '#FFB3B3', '#FF6666', '#FF0000']
       },
       textStyle: {
         fontSize: 11,
-        color: '#333'
+        color: '#d1d5db'
       },
-      left: 'center',
-      bottom: 10,
-      itemWidth: 15,
+      right: 10,
+      top: 'center',
+      itemWidth: 20,
       itemHeight: 120
     },
     geo: {

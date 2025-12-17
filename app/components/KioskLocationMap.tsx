@@ -116,7 +116,7 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
       .filter(([_, data]) => data.onlineCount > 0)
       .map(([state, data]) => ({
         name: state,
-        value: [data.lng - 0.8, data.lat, data.onlineCount], // Offset left
+        value: [data.lng - 1.8, data.lat, data.onlineCount], // Offset left more to prevent overlap
         total: data.onlineCount + data.offlineCount
       }));
     
@@ -125,7 +125,7 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
       .filter(([_, data]) => data.offlineCount > 0)
       .map(([state, data]) => ({
         name: state,
-        value: [data.lng + 0.8, data.lat, data.offlineCount], // Offset right
+        value: [data.lng + 1.8, data.lat, data.offlineCount], // Offset right more to prevent overlap
         total: data.onlineCount + data.offlineCount
       }));
     
@@ -166,16 +166,7 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
         fontSize: 13
       }
     },
-    legend: {
-      orient: 'vertical',
-      right: 20,
-      top: 20,
-      data: ['Online Kiosks', 'Offline Kiosks'],
-      textStyle: {
-        fontSize: 12,
-        color: '#333'
-      }
-    },
+
       geo: {
       map: 'USA',
       roam: true,
@@ -184,13 +175,18 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
         max: 3
       },
       aspectScale: 0.75,
-      zoom: 1.2,
+      zoom: 1.25,
       center: [-96, 37.5],
       label: {
         show: true,
         fontSize: 11,
         color: '#000',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        formatter: (params: any) => {
+          // Only show state name if it has data
+          const hasData = stateData.some(state => state.name === params.name);
+          return hasData ? params.name : '';
+        }
       },
       itemStyle: {
         areaColor: '#f3f4f6',

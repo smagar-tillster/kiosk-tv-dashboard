@@ -16,31 +16,77 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* Main Dashboard Card */}
           <Link href="/pages/dashboard">
-            <div className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border-2 border-transparent hover:border-blue-500">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-4 bg-blue-100 rounded-xl group-hover:bg-blue-500 transition-colors">
-                  <BarChart3 className="h-8 w-8 text-blue-600 group-hover:text-white" />
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-blue-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-500 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-blue-600 group-hover:text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Main Dashboard</h2>
+                <h2 className="text-xl font-bold text-gray-800">Main Dashboard</h2>
               </div>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 text-sm mb-3">
                 Complete overview with stats, charts, and alerts for both tenants
               </p>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <ul className="space-y-1 text-xs text-gray-500">
                 <li className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-green-500" />
+                  <Activity className="h-3 w-3 text-green-500" />
                   Store & Kiosk Status
                 </li>
                 <li className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-blue-500" />
+                  <Activity className="h-3 w-3 text-blue-500" />
                   Order Failure Trends
                 </li>
+              </ul>
+            </div>
+          </Link>
+
+          {/* BK-US Dashboard Card */}
+          <Link href="/bk-us-dashboard">
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-emerald-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-emerald-100 rounded-lg group-hover:bg-emerald-500 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-emerald-600 group-hover:text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">BK-US Dashboard</h2>
+              </div>
+              <p className="text-gray-600 text-sm mb-3">
+                Burger King US dedicated dashboard with maps and charts
+              </p>
+              <ul className="space-y-1 text-xs text-gray-500">
                 <li className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-orange-500" />
-                  Alert Heatmaps
+                  <Activity className="h-3 w-3 text-emerald-500" />
+                  Real-time Kiosk Status
+                </li>
+                <li className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-emerald-500" />
+                  Order Failure Analytics
+                </li>
+              </ul>
+            </div>
+          </Link>
+
+          {/* PLK-US Dashboard Card */}
+          <Link href="/plk-us-dashboard">
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-orange-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-orange-100 rounded-lg group-hover:bg-orange-500 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-orange-600 group-hover:text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">PLK-US Dashboard</h2>
+              </div>
+              <p className="text-gray-600 text-sm mb-3">
+                Popeyes US dedicated dashboard with maps and charts
+              </p>
+              <ul className="space-y-1 text-xs text-gray-500">
+                <li className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-orange-500" />
+                  Real-time Kiosk Status
+                </li>
+                <li className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-orange-500" />
+                  Order Failure Analytics
                 </li>
               </ul>
             </div>
@@ -48,57 +94,49 @@ export default function Home() {
 
           {/* Map Dashboard Card */}
           <Link href="/pages/map-dashboard">
-            <div className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border-2 border-transparent hover:border-orange-500">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-4 bg-orange-100 rounded-xl group-hover:bg-orange-500 transition-colors">
-                  <Map className="h-8 w-8 text-orange-600 group-hover:text-white" />
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-purple-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-500 transition-colors">
+                  <Map className="h-6 w-6 text-purple-600 group-hover:text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Map Dashboard</h2>
+                <h2 className="text-xl font-bold text-gray-800">Map Dashboard</h2>
               </div>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 text-sm mb-3">
                 Geographic view of combined alert distribution across the US
               </p>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <ul className="space-y-1 text-xs text-gray-500">
                 <li className="flex items-center gap-2">
-                  <Map className="h-4 w-4 text-orange-500" />
-                  Combined BK-US & PLK-US Data
+                  <Map className="h-3 w-3 text-purple-500" />
+                  Combined BK & PLK Data
                 </li>
                 <li className="flex items-center gap-2">
-                  <Map className="h-4 w-4 text-orange-500" />
-                  State-by-State Breakdown
-                </li>
-                <li className="flex items-center gap-2">
-                  <Map className="h-4 w-4 text-orange-500" />
+                  <Map className="h-3 w-3 text-purple-500" />
                   Interactive US Map
                 </li>
               </ul>
             </div>
           </Link>
 
-          {/* EU tenants Card */}
+          {/* EU Tenants Card */}
           <Link href="/pages/eu-tenants">
-            <div className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border-2 border-transparent hover:border-orange-500">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-4 bg-orange-100 rounded-xl group-hover:bg-orange-500 transition-colors">
-                  <Map className="h-8 w-8 text-orange-600 group-hover:text-white" />
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-indigo-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-indigo-100 rounded-lg group-hover:bg-indigo-500 transition-colors">
+                  <Map className="h-6 w-6 text-indigo-600 group-hover:text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">EU Tenants</h2>
+                <h2 className="text-xl font-bold text-gray-800">EU Tenants</h2>
               </div>
-              <p className="text-gray-600 mb-4">
-                EU tenants view
+              <p className="text-gray-600 text-sm mb-3">
+                European tenants monitoring view
               </p>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <ul className="space-y-1 text-xs text-gray-500">
                 <li className="flex items-center gap-2">
-                  <Map className="h-4 w-4 text-orange-500" />
-                    EU tenants data
+                  <Map className="h-3 w-3 text-indigo-500" />
+                  EU Tenants Data
                 </li>
                 <li className="flex items-center gap-2">
-                  <Map className="h-4 w-4 text-orange-500" />
-                  State-by-State Breakdown
-                </li>
-                <li className="flex items-center gap-2">
-                  <Map className="h-4 w-4 text-orange-500" />
-                  Interactive US Map
+                  <Map className="h-3 w-3 text-indigo-500" />
+                  State-by-State View
                 </li>
               </ul>
             </div>

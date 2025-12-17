@@ -77,14 +77,44 @@ export function ConfigurableLineChart({ data, config }: ConfigurableLineChartPro
 
 // Helper function to transform NewRelic data to DTO format
 function transformNewRelicData(rawData: unknown[]): LineChartDataPoint[] {
-  return rawData.map((item) => {
+  return rawData.map((item, index) => {
     const record = item as Record<string, any>;
-    const timestamp = record.beginTimeSeconds * 1000;
-    const date = new Date(timestamp);
-    const normalizedDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    
+    let dateStr = '';
+    let timestamp = 0;
+    
+    // NewRelic returns 'Date of timestamp' (with spaces and capital D)
+    const dateValue = record['Date of timestamp'];
+    
+    if (dateValue !== undefined && dateValue !== null) {
+      try {
+        // Parse the date value (should be ISO string or similar)
+        const dateObj = new Date(dateValue);
+        const time = dateObj.getTime();
+        
+        // Check if date is valid
+        if (!isNaN(time)) {
+          timestamp = time;
+          // Format as MMM-DD (e.g., "Dec-14")
+          const month = dateObj.toLocaleString('en-US', { month: 'short' });
+          const day = String(dateObj.getUTCDate()).padStart(2, '0');
+          dateStr = `${month}-${day}`;
+        } else {
+          dateStr = `Day ${index + 1}`;
+          timestamp = index;
+        }
+      } catch (e) {
+        dateStr = `Day ${index + 1}`;
+        timestamp = index;
+      }
+    } else {
+      dateStr = `Day ${index + 1}`;
+      timestamp = index;
+    }
+
     return {
-      date: normalizedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
-      timestamp: normalizedDate.getTime(),
+      date: dateStr,
+      timestamp: timestamp,
       value: record['count(*)'] || record.count || 0,
       count: record['count(*)'] || record.count || 0,
     };

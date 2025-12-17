@@ -36,16 +36,16 @@ function StatCard({ title, value, subtitle, variant, loading }: StatCardProps) {
               <>
                 <div className={`
                   flex items-center justify-center
-                  w-20 h-20 rounded-full
+                  px-4 py-2 rounded-full
                   ${isHealthy 
                     ? 'bg-green-500' 
                     : 'bg-red-500 animate-pulse shadow-lg shadow-red-500/50'
                   }
                 `}>
-                  <span className="text-4xl font-extrabold text-white">{value}</span>
+                  <span className="text-xl font-extrabold text-white whitespace-nowrap">{value}</span>
                 </div>
                 {subtitle && (
-                  <p className={`text-2xl font-bold ${textColor}`}>{subtitle}</p>
+                  <p className={`text-4xl font-extrabold ${textColor}`}>{subtitle.split(' / ')[0]}</p>
                 )}
               </>
             ) : (
@@ -84,6 +84,13 @@ export default function MainDashboard() {
     BKUS: { totalStores: 0, totalKiosks: 0, onlineStores: 0, offlineStores: 0, onlineKiosks: 0, offlineKiosks: 0 },
     PLKUS: { totalStores: 0, totalKiosks: 0, onlineStores: 0, offlineStores: 0, onlineKiosks: 0, offlineKiosks: 0 },
   });
+  const [disconnectedKiosks, setDisconnectedKiosks] = useState<{
+    BKUS: number;
+    PLKUS: number;
+  }>({
+    BKUS: 0,
+    PLKUS: 0,
+  });
   const [chartData, setChartData] = useState<{
     BKUS: ChartData;
     PLKUS: ChartData;
@@ -112,15 +119,18 @@ export default function MainDashboard() {
         'PLKUS'
       );
 
-      const [bkData, plkData, bkCharts, plkCharts] = await Promise.all([
+      const [bkData, plkData, bkCharts, plkCharts, bkDisconnected, plkDisconnected] = await Promise.all([
         bkService.fetchDashboardData('BKUS'),
         plkService.fetchDashboardData('PLKUS'),
         bkService.fetchChartData('BKUS'),
         plkService.fetchChartData('PLKUS'),
+        bkService.fetchDisconnectedKiosks('BKUS'),
+        plkService.fetchDisconnectedKiosks('PLKUS'),
       ]);
 
       setStats({ BKUS: bkData, PLKUS: plkData });
       setChartData({ BKUS: bkCharts, PLKUS: plkCharts });
+      setDisconnectedKiosks({ BKUS: bkDisconnected, PLKUS: plkDisconnected });
       
       const endTime = new Date();
       const duration = ((endTime.getTime() - startTime.getTime()) / 1000).toFixed(2);
@@ -149,8 +159,8 @@ export default function MainDashboard() {
   }, []);
 
   const calculatePercentage = (online: number, total: number) => {
-    if (total === 0) return 0;
-    return Math.round((online / total) * 100);
+    if (total === 0) return '0';
+    return ((online / total) * 100).toFixed(2);
   };
 
   return (
@@ -188,15 +198,15 @@ export default function MainDashboard() {
             <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
-                value={`${stats.BKUS.totalStores} (${stats.BKUS.totalKiosks || 0})`}
+                value={`${stats.BKUS.totalStores} (${Math.max(0, stats.BKUS.onlineKiosks + stats.BKUS.offlineKiosks - disconnectedKiosks.BKUS)})`}
                 icon={<Store className="h-5 w-5" />}
                 variant="bk"
                 loading={loading}
               />
               <StatCard
                 title="Online Kiosks"
-                value={`${calculatePercentage(stats.BKUS.onlineKiosks, stats.BKUS.totalKiosks || 0)}%`}
-                subtitle={`${stats.BKUS.onlineKiosks} / ${stats.BKUS.totalKiosks || 0}`}
+                value={`${calculatePercentage(stats.BKUS.onlineKiosks, Math.max(1, stats.BKUS.onlineKiosks + stats.BKUS.offlineKiosks))}%`}
+                subtitle={`${stats.BKUS.onlineKiosks} / ${Math.max(0, stats.BKUS.onlineKiosks + stats.BKUS.offlineKiosks)}`}
                 icon={<Activity className="h-5 w-5" />}
                 variant="bk"
                 loading={loading}
@@ -275,15 +285,15 @@ export default function MainDashboard() {
             <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
-                value={`${stats.PLKUS.totalStores} (${stats.PLKUS.totalKiosks || 0})`}
+                value={`${stats.PLKUS.totalStores} (${Math.max(0, stats.PLKUS.onlineKiosks + stats.PLKUS.offlineKiosks - disconnectedKiosks.PLKUS)})`}
                 icon={<Store className="h-5 w-5" />}
                 variant="plk"
                 loading={loading}
               />
               <StatCard
                 title="Online Kiosks"
-                value={`${calculatePercentage(stats.PLKUS.onlineKiosks, stats.PLKUS.totalKiosks || 0)}%`}
-                subtitle={`${stats.PLKUS.onlineKiosks} / ${stats.PLKUS.totalKiosks || 0}`}
+                value={`${calculatePercentage(stats.PLKUS.onlineKiosks, Math.max(1, stats.PLKUS.onlineKiosks + stats.PLKUS.offlineKiosks))}%`}
+                subtitle={`${stats.PLKUS.onlineKiosks}`}
                 icon={<Activity className="h-5 w-5" />}
                 variant="plk"
                 loading={loading}

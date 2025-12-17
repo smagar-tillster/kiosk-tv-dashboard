@@ -23,6 +23,21 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
   const xAxisConfig = chartConfig.xAxis || {};
   const yAxisConfig = chartConfig.yAxis || {};
 
+  // Calculate dynamic Y-axis width for horizontal charts based on longest label
+  let yAxisWidth = 80;
+  if (isHorizontal && chartData && chartData.length > 0) {
+    const maxLength = Math.max(
+      ...chartData.map(item => String(item.type || '').length)
+    );
+    // Estimate: ~8 pixels per character + padding
+    yAxisWidth = Math.min(Math.max(maxLength * 7 + 20, 100), 200);
+  }
+
+  // Reduce left margin for horizontal charts to fit labels better
+  const margin = isHorizontal 
+    ? { top: 5, right: 50, left: 5, bottom: 5 }
+    : { top: 5, right: 30, left: 10, bottom: 5 };
+
   return (
     <ResponsiveContainer 
       width={chartConfig.width as any || '100%'} 
@@ -31,7 +46,7 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
       <BarChart 
         data={chartData} 
         layout={isHorizontal ? 'vertical' : 'horizontal'}
-        margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+        margin={margin}
         barGap={chartConfig.barGap}
         barCategoryGap={chartConfig.barCategoryGap}
       >
@@ -50,11 +65,11 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
           type={isHorizontal ? 'category' : 'number'}
           dataKey={isHorizontal ? (yAxisConfig.dataKey || 'type') : undefined}
           tick={{ 
-            fontSize: yAxisConfig.fontSize || 12, 
+            fontSize: yAxisConfig.fontSize || 10, 
             fontWeight: yAxisConfig.fontWeight || 'bold',
             fill: yAxisConfig.color || '#9ca3af',
           }} 
-          width={yAxisConfig.width || 220}
+          width={isHorizontal ? yAxisWidth : (yAxisConfig.width || 50)}
           label={yAxisConfig.label ? { value: yAxisConfig.label, angle: -90, position: 'insideLeft', fill: '#9ca3af' } : undefined}
         />
         {chartConfig.showTooltip !== false && (

@@ -105,9 +105,8 @@ export default function MapDashboard() {
         <div className="h-full w-full bg-gray-800 rounded-lg shadow relative">
           <KioskLocationMap data={combinedKioskData} />
           
-          {/* Bottom Right Info Cards - Stacked Vertically */}
-          <div className="absolute bottom-6 right-6 flex flex-col gap-3 max-w-xs">
-            {/* US Kiosk Status Map Info Card */}
+          {/* Bottom Left Info Card - US Kiosk Status Map */}
+          <div className="absolute bottom-6 left-6 max-w-xs">
             <div className="bg-gray-800 rounded-lg shadow-lg p-3 border border-gray-700">
               <h2 className="text-sm font-bold text-white mb-2">US Kiosk Status Map</h2>
               <p className="text-xs text-gray-300 mb-2">Combined data for BK-US & PLK-US</p>
@@ -126,8 +125,10 @@ export default function MapDashboard() {
                 </div>
               </div>
             </div>
-            
-            {/* Kiosk Status Legends Card */}
+          </div>
+          
+          {/* Bottom Right Legends Card */}
+          <div className="absolute bottom-6 right-6 max-w-xs">
             <div className="bg-gray-800 rounded-lg shadow-lg p-3 border border-gray-700">
               {/* Kiosk Status Section */}
               <h3 className="text-xs font-bold text-white mb-2">Kiosk Status</h3>
