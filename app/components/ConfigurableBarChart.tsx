@@ -97,14 +97,13 @@ export function ConfigurableBarChart({ data, config }: ConfigurableBarChartProps
 // Helper function to transform NewRelic data to DTO format
 function transformNewRelicData(rawData: unknown[]): BarChartDataPoint[] {
   return (rawData as Record<string, any>[])
-    .filter((item: Record<string, any>) => item.facet && item.facet !== 'Other')
+    .filter((item: Record<string, any>) => item.facet)
     .map((item: Record<string, any>) => ({
-      type: item.facet?.substring(0, 20) || 'Unknown',
-      category: item.facet?.substring(0, 20) || 'Unknown',
+      type: item.facet || 'Unknown',
+      category: item.facet || 'Unknown',
       count: item['count(*)'] || item.count || 0,
       value: item['count(*)'] || item.count || 0,
       label: item.facet,
     }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
+    .sort((a, b) => b.count - a.count);
 }
