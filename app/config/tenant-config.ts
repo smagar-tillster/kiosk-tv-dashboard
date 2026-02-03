@@ -61,15 +61,15 @@ export const DASHBOARD_CONFIG: DashboardConfig = {
 export const TENANT_CONFIG = {
   BKUS: {
     name: 'BK-US',
-    tenant: (process.env.NEWRELIC_TENANT_BKUS || 'BKUS') as 'BKUS' | 'PLKUS',
-    accountId: process.env.NEWRELIC_ACCOUNT_ID_BKUS || '',
-    apiKey: process.env.NEWRELIC_API_KEY_BKUS || '',
+    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_BKUS || process.env.NEWRELIC_TENANT_BKUS || 'BKUS') as 'BKUS' | 'PLKUS',
+    accountId: process.env.NEXT_PUBLIC_NEWRELIC_ACCOUNT_ID_BKUS || process.env.NEWRELIC_ACCOUNT_ID_BKUS || '',
+    apiKey: process.env.NEXT_PUBLIC_NEWRELIC_API_KEY_BKUS || process.env.NEWRELIC_API_KEY_BKUS || '',
   },
   PLKUS: {
     name: 'PLK-US',
-    tenant: (process.env.NEWRELIC_TENANT_PLKUS || 'PLKUS') as 'BKUS' | 'PLKUS',
-    accountId: process.env.NEWRELIC_ACCOUNT_ID_PLKUS || '',
-    apiKey: process.env.NEWRELIC_API_KEY_PLKUS || '',
+    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_PLKUS || process.env.NEWRELIC_TENANT_PLKUS || 'PLKUS') as 'BKUS' | 'PLKUS',
+    accountId: process.env.NEXT_PUBLIC_NEWRELIC_ACCOUNT_ID_PLKUS || process.env.NEWRELIC_ACCOUNT_ID_PLKUS || '',
+    apiKey: process.env.NEXT_PUBLIC_NEWRELIC_API_KEY_PLKUS || process.env.NEWRELIC_API_KEY_PLKUS || '',
   },
 } as const;
 

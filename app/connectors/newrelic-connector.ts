@@ -17,10 +17,12 @@ export class NewRelicConnector implements DataConnector {
     this.accountId = accountId;
     this.tenant = tenant;
     
-    // Use Lambda endpoint in production, local API in development
-    this.endpoint = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_ENDPOINT
+    // Use external endpoint if provided, otherwise use local Next.js API route
+    this.endpoint = process.env.NEXT_PUBLIC_API_ENDPOINT
       ? process.env.NEXT_PUBLIC_API_ENDPOINT
       : '/api/newrelic';
+    
+    console.log('[NewRelic Connector] Using endpoint:', this.endpoint);
   }
 
   /**
@@ -37,14 +39,24 @@ export class NewRelicConnector implements DataConnector {
         headers['X-Tenant'] = this.tenant;
       }
       
+      // Debug logging - log the actual query being sent
+      console.log('[NewRelic Connector] Sending query:', query.substring(0, 500));
+      
+      const requestPayload = {
+        tenant: this.tenant,
+        query,
+        variables: { accountId: this.accountId, ...params },
+      };
+      
+      console.log('[NewRelic Connector] ===== FULL REQUEST PAYLOAD =====');
+      console.log('[NewRelic Connector] Endpoint:', this.endpoint);
+      console.log('[NewRelic Connector] Payload:', JSON.stringify(requestPayload, null, 2));
+      console.log('[NewRelic Connector] ==================================');
+      
       const response = await fetch(this.endpoint, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          tenant: this.tenant,
-          query,
-          variables: { accountId: this.accountId, ...params },
-        }),
+        body: JSON.stringify(requestPayload),
       });
 
       if (!response.ok) {

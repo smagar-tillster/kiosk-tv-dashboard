@@ -176,9 +176,8 @@ export const NEWRELIC_QUERIES = {
     disconnectedKiosks: `
       from SystemSample 
       select uniqueCount(fullHostname) 
-      WITH TIMEZONE 'America/Los_Angeles'
       since 1 DAY AGO 
-      COMPARE WITH 1 week ago
+      COMPARE WITH 1 WEEK AGO
     `,
 
     // Last Failed Order (timestamp and store name)
@@ -397,9 +396,8 @@ export const NEWRELIC_QUERIES = {
     disconnectedKiosks: `
       from SystemSample 
       select uniqueCount(fullHostname) 
-      WITH TIMEZONE 'America/Los_Angeles'
       since 1 DAY AGO 
-      COMPARE WITH 1 week ago
+      COMPARE WITH 1 WEEK AGO
     `,
 
     // Last Failed Order (timestamp and store name)
@@ -408,8 +406,7 @@ export const NEWRELIC_QUERIES = {
       select latest(timestamp), latest(storeName)
       where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
       WITH TIMEZONE 'America/Los_Angeles'
-      since today until now 
-      limit max
+      since today until now limit max
     `,
   },
 };
@@ -417,16 +414,35 @@ export const NEWRELIC_QUERIES = {
 /**
  * Build GraphQL query for NewRelic NerdGraph API
  */
-export function buildNerdGraphQuery(accountId: string, nrqlQuery: string): string {
-  return `
+export function buildNerdGraphQuery(accountId: string, nrqlQuery: string, tenant?: 'BKUS' | 'PLKUS'): string {
+  // Hardcode account IDs if empty (fallback for environment variable issues)
+  // BKUS: 4502664, PLKUS: 4817770
+  let finalAccountId = accountId;
+  if (!accountId || accountId === '') {
+    if (tenant === 'PLKUS') {
+      finalAccountId = '4817770';
+      console.warn('[buildNerdGraphQuery] Empty accountId, using PLKUS: 4817770');
+    } else {
+      finalAccountId = '4502664';
+      console.warn('[buildNerdGraphQuery] Empty accountId, using BKUS: 4502664');
+    }
+  }
+  
+  console.log('[buildNerdGraphQuery] Using Account ID:', finalAccountId, 'for tenant:', tenant || 'unknown');
+  
+  const escapedQuery = nrqlQuery.replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  
+  const graphqlQuery = `
     {
       actor {
-        account(id: ${accountId}) {
-          nrql(query: "${nrqlQuery.replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()}") {
+        account(id: ${finalAccountId}) {
+          nrql(query: "${escapedQuery}") {
             results
           }
         }
       }
     }
   `;
+  
+  return graphqlQuery;
 }

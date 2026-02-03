@@ -266,7 +266,7 @@ export class DashboardDataService {
    * Execute a NRQL query and return results
    */
   private async executeQuery(nrqlQuery: string): Promise<any[]> {
-    const graphqlQuery = buildNerdGraphQuery(this.accountId, nrqlQuery);
+    const graphqlQuery = buildNerdGraphQuery(this.accountId, nrqlQuery, this.tenant);
     const response = await this.connector.fetchData<any>(graphqlQuery);
     return response?.actor?.account?.nrql?.results || [];
   }
