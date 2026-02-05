@@ -44,6 +44,15 @@ export interface DashboardConfig {
    * 'light' | 'dark'
    */
   defaultTheme: 'light' | 'dark';
+  
+  /**
+   * Log level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
+   * DEBUG: Show all logs
+   * INFO: Show INFO, WARN, ERROR (default)
+   * WARN: Show WARN, ERROR
+   * ERROR: Show ERROR only
+   */
+  logLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 }
 
 export const DASHBOARD_CONFIG: DashboardConfig = {
@@ -56,6 +65,8 @@ export const DASHBOARD_CONFIG: DashboardConfig = {
   autoRefreshMinutes: Number(process.env.NEXT_PUBLIC_AUTO_REFRESH_MINUTES) || 15, // Default: 1 minute
   // Default theme: 'light' or 'dark'
   defaultTheme: (process.env.NEXT_PUBLIC_DEFAULT_THEME as 'light' | 'dark') || 'dark',
+  // Log level: INFO by default (shows INFO, WARN, ERROR)
+  logLevel: (process.env.NEXT_PUBLIC_LOG_LEVEL as 'DEBUG' | 'INFO' | 'WARN' | 'ERROR') || 'INFO',
 };
 
 export const TENANT_CONFIG = {

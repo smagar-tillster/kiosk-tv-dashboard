@@ -1,4 +1,5 @@
 import { DataConnector, QueryResult } from './types';
+import { logger } from '@/app/utils';
 
 /**
  * NewRelic NerdGraph API connector
@@ -22,7 +23,7 @@ export class NewRelicConnector implements DataConnector {
       ? process.env.NEXT_PUBLIC_API_ENDPOINT
       : '/api/newrelic';
     
-    console.log('[NewRelic Connector] Using endpoint:', this.endpoint);
+    logger.debug('[NewRelic Connector] Using endpoint:', this.endpoint);
   }
 
   /**
@@ -40,7 +41,7 @@ export class NewRelicConnector implements DataConnector {
       }
       
       // Debug logging - log the actual query being sent
-      console.log('[NewRelic Connector] Sending query:', query.substring(0, 500));
+      logger.debug('[NewRelic Connector] Sending query:', query.substring(0, 500));
       
       const requestPayload = {
         tenant: this.tenant,
@@ -48,10 +49,10 @@ export class NewRelicConnector implements DataConnector {
         variables: { accountId: this.accountId, ...params },
       };
       
-      console.log('[NewRelic Connector] ===== FULL REQUEST PAYLOAD =====');
-      console.log('[NewRelic Connector] Endpoint:', this.endpoint);
-      console.log('[NewRelic Connector] Payload:', JSON.stringify(requestPayload, null, 2));
-      console.log('[NewRelic Connector] ==================================');
+      logger.debug('[NewRelic Connector] ===== FULL REQUEST PAYLOAD =====');
+      logger.debug('[NewRelic Connector] Endpoint:', this.endpoint);
+      logger.debug('[NewRelic Connector] Payload:', JSON.stringify(requestPayload, null, 2));
+      logger.debug('[NewRelic Connector] ==================================');
       
       const response = await fetch(this.endpoint, {
         method: 'POST',
@@ -76,7 +77,7 @@ export class NewRelicConnector implements DataConnector {
 
       return result.data as T;
     } catch (error) {
-      console.error('NewRelic connector error:', error);
+      logger.error('NewRelic connector error:', error);
       throw error;
     }
   }
