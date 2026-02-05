@@ -150,7 +150,7 @@ export default function BKUSDashboard() {
 
   const bkLogo = (
     <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
-      <Image src="/bk-us.png" alt="BK-US" width={56} height={56} className="object-contain" />
+      <Image src="/nr-tv-dashboard/bk-us.png" alt="BK-US" width={56} height={56} className="object-contain" />
     </div>
   );
 

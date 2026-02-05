@@ -151,7 +151,7 @@ export default function PLKUSDashboard() {
 
   const plkLogo = (
     <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
-      <Image src="/plk-us.png" alt="PLK-US" width={56} height={56} className="object-contain" />
+      <Image src="/nr-tv-dashboard/plk-us.png" alt="PLK-US" width={56} height={56} className="object-contain" />
     </div>
   );
 
