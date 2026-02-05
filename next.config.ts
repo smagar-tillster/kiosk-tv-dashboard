@@ -4,8 +4,9 @@ const nextConfig: NextConfig = {
   // Use 'export' for static hosting (GitHub Pages), 'standalone' for Docker
   // output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : 'export',
   
-  // basePath only for GitHub Pages deployment, empty for local and Docker
-  basePath: '',
+  // For nginx subpath deployment
+  basePath: '/nr-tv-dashboard',
+  assetPrefix: '/nr-tv-dashboard',
   images: {
     unoptimized: true,
   },

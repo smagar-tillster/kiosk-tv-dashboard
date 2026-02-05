@@ -185,7 +185,7 @@ export default function MainDashboard() {
             <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white">
-                  <Image src="/bk-us.png" alt="Burger King" width={56} height={56} className="object-contain" />
+                  <Image src="/nr-tv-dashboard/bk-us.png" alt="Burger King" width={56} height={56} className="object-contain" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">BK-US Alerts</h2>
@@ -272,7 +272,7 @@ export default function MainDashboard() {
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center p-1">
-                  <Image src="/plk-us.png" alt="Popeyes" width={56} height={56} className="object-contain" />
+                  <Image src="/nr-tv-dashboard/plk-us.png" alt="Popeyes" width={56} height={56} className="object-contain" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">PLK-US Alerts</h2>
