@@ -92,6 +92,31 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* Exec Dashboard Card */}
+          <Link href="/exec-dashboard">
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-teal-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-teal-100 rounded-lg group-hover:bg-teal-500 transition-colors">
+                  <Activity className="h-6 w-6 text-teal-600 group-hover:text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">Exec Dashboard</h2>
+              </div>
+              <p className="text-gray-600 text-sm mb-3">
+                Executive view with kiosk status maps for both tenants
+              </p>
+              <ul className="space-y-1 text-xs text-gray-500">
+                <li className="flex items-center gap-2">
+                  <Map className="h-3 w-3 text-teal-500" />
+                  Kiosk Status Maps
+                </li>
+                <li className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-teal-500" />
+                  Real-time Stats
+                </li>
+              </ul>
+            </div>
+          </Link>
+
           {/* Map Dashboard Card */}
           <Link href="/pages/map-dashboard">
             <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-purple-500">

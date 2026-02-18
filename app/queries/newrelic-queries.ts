@@ -2,6 +2,7 @@
  * NewRelic Query Definitions
  * All NRQL queries for the dashboard in one place
  */
+import { logger } from '@/app/utils';
 
 export const NEWRELIC_QUERIES = {
   // BK-US Queries
@@ -421,14 +422,14 @@ export function buildNerdGraphQuery(accountId: string, nrqlQuery: string, tenant
   if (!accountId || accountId === '') {
     if (tenant === 'PLKUS') {
       finalAccountId = '4817770';
-      console.warn('[buildNerdGraphQuery] Empty accountId, using PLKUS: 4817770');
+      logger.warn('[buildNerdGraphQuery] Empty accountId, using PLKUS: 4817770');
     } else {
       finalAccountId = '4502664';
-      console.warn('[buildNerdGraphQuery] Empty accountId, using BKUS: 4502664');
+      logger.warn('[buildNerdGraphQuery] Empty accountId, using BKUS: 4502664');
     }
   }
   
-  console.log('[buildNerdGraphQuery] Using Account ID:', finalAccountId, 'for tenant:', tenant || 'unknown');
+  logger.debug('[buildNerdGraphQuery] Using Account ID:', finalAccountId, 'for tenant:', tenant || 'unknown');
   
   const escapedQuery = nrqlQuery.replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
   

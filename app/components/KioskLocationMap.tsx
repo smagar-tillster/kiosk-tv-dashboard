@@ -129,11 +129,6 @@ export function KioskLocationMap({ data }: KioskLocationMapProps) {
         total: data.onlineCount + data.offlineCount
       }));
     
-    console.log('=== State Summary ===');
-    console.log('States processed:', stateMap.size);
-    console.log('Total online kiosks:', Array.from(stateMap.values()).reduce((sum, s) => sum + s.onlineCount, 0));
-    console.log('Total offline kiosks:', Array.from(stateMap.values()).reduce((sum, s) => sum + s.offlineCount, 0));
-    
     return { 
       stateData: stateDataArray, 
       onlineScatterData: onlineScatter,

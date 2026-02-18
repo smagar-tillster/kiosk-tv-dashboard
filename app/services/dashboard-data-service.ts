@@ -1,5 +1,6 @@
 import { NewRelicConnector } from '@/app/connectors/newrelic-connector';
 import { NEWRELIC_QUERIES, buildNerdGraphQuery } from '@/app/queries/newrelic-queries';
+import { logger } from '@/app/utils';
 
 /**
  * Data Service for Dashboard Metrics
@@ -51,13 +52,13 @@ export class DashboardDataService {
         this.executeQuery(queries.totalKiosks),
       ]);
 
-      console.log('[DEBUG] kiosksResponse:', JSON.stringify(kiosksResponse));
+      logger.debug('kiosksResponse:', JSON.stringify(kiosksResponse));
       const stores = storesResponse[0]?.["uniqueCount.storeName"] || 0;
       const kiosks = kiosksResponse[0]?.["uniqueCount.concat(storeName, kioskName)"] || 0;
 
       return { stores, kiosks };
     } catch (error) {
-      console.error(`Error fetching ${tenant} total counts:`, error);
+      logger.error(`Error fetching ${tenant} total counts:`, error);
       throw error;
     }
   }
@@ -83,8 +84,8 @@ export class DashboardDataService {
       const storeStatus = storeStatusResponse[0] || {};
       const kioskStatus = kioskStatusResponse[0] || {};
 
-      console.log('[DEBUG] fetchStatus response - storeStatus:', storeStatus);
-      console.log('[DEBUG] fetchStatus response - kioskStatus:', kioskStatus);
+      logger.debug('fetchStatus response - storeStatus:', storeStatus);
+      logger.debug('fetchStatus response - kioskStatus:', kioskStatus);
 
       const result = {
         onlineStores: storeStatus.onlineStores || 0,
@@ -93,11 +94,11 @@ export class DashboardDataService {
         offlineKiosks: kioskStatus.offlineKiosks || 0,
       };
 
-      console.log('[DEBUG] fetchStatus result:', result);
+      logger.debug('fetchStatus result:', result);
 
       return result;
     } catch (error) {
-      console.error(`Error fetching ${tenant} status:`, error);
+      logger.error(`Error fetching ${tenant} status:`, error);
       throw error;
     }
   }
@@ -123,7 +124,7 @@ export class DashboardDataService {
 
       return stats;
     } catch (error) {
-      console.error(`❌ Error fetching ${tenant} dashboard data:`, error);
+      logger.error(`Error fetching ${tenant} dashboard data:`, error);
       throw error;
     }
   }
@@ -156,7 +157,7 @@ export class DashboardDataService {
 
       return chartData;
     } catch (error) {
-      console.error(`❌ Error fetching ${tenant} chart data:`, error);
+      logger.error(`Error fetching ${tenant} chart data:`, error);
       return {
         orderFailureTrend: [],
         typeOfIssues: [],
@@ -177,13 +178,13 @@ export class DashboardDataService {
       const onlineCount = kioskLocations.filter((k: any) => k.status === 'ONLINE' || k['latest.status'] === 'ONLINE').length;
       const offlineCount = kioskLocations.filter((k: any) => k.status === 'OFFLINE' || k['latest.status'] === 'OFFLINE').length;
       
-      console.log('[DEBUG] fetchKioskLocations total count:', kioskLocations.length);
-      console.log('[DEBUG] fetchKioskLocations online:', onlineCount);
-      console.log('[DEBUG] fetchKioskLocations offline:', offlineCount);
+      logger.debug('fetchKioskLocations total count:', kioskLocations.length);
+      logger.debug('fetchKioskLocations online:', onlineCount);
+      logger.debug('fetchKioskLocations offline:', offlineCount);
       
       return kioskLocations;
     } catch (error) {
-      console.error(`❌ Error fetching ${tenant} kiosk locations:`, error);
+      logger.error(`Error fetching ${tenant} kiosk locations:`, error);
       return [];
     }
   }
@@ -200,26 +201,26 @@ export class DashboardDataService {
       }
       
       const response = await this.executeQuery(queries.disconnectedKiosks);
-      console.log('[DEBUG] disconnectedKiosks full response:', JSON.stringify(response, null, 2));
+      logger.debug('disconnectedKiosks full response:', JSON.stringify(response, null, 2));
       
       if (response && response.length >= 2) {
         // COMPARE WITH returns 2 result objects: [0] = current period, [1] = comparison period
         const currentData = response[0];
         const previousData = response[1];
         
-        console.log('[DEBUG] disconnectedKiosks current data:', currentData);
-        console.log('[DEBUG] disconnectedKiosks previous data:', previousData);
+        logger.debug('disconnectedKiosks current data:', currentData);
+        logger.debug('disconnectedKiosks previous data:', previousData);
         
         const current = currentData?.['uniqueCount.fullHostname'] || currentData?.result || 0;
         const previous = previousData?.['uniqueCount.fullHostname'] || previousData?.result || 0;
         
-        console.log('[DEBUG] disconnectedKiosks - previous:', previous, 'current:', current);
+        logger.debug('disconnectedKiosks - previous:', previous, 'current:', current);
         
         const difference = previous - current;
         
         // Return 0 if negative (more kiosks now than before)
         const disconnected = difference > 0 ? difference : 0;
-        console.log('[DEBUG] disconnectedKiosks - difference:', difference, 'returning:', disconnected);
+        logger.debug('disconnectedKiosks - difference:', difference, 'returning:', disconnected);
         
         return disconnected;
       }

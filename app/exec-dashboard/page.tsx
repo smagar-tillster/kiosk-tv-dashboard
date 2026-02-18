@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ConfigurableLineChart, ConfigurableBarChart, AlertHeatmap } from '@/app/components';
+import { KioskLocationMap } from '@/app/components';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
 import { TENANT_CONFIG, DASHBOARD_CONFIG } from '@/app/config/tenant-config';
 import { logger, LogLevel } from '@/app/utils';
@@ -83,7 +83,7 @@ interface ChartData {
   alertHeatmap: unknown[];
 }
 
-export default function MainDashboard() {
+export default function ExecDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<{
@@ -100,6 +100,13 @@ export default function MainDashboard() {
     BKUS: 0,
     PLKUS: 0,
   });
+  const [kioskLocations, setKioskLocations] = useState<{
+    BKUS: any[];
+    PLKUS: any[];
+  }>({
+    BKUS: [],
+    PLKUS: [],
+  });
   const [chartData, setChartData] = useState<{
     BKUS: ChartData;
     PLKUS: ChartData;
@@ -112,8 +119,8 @@ export default function MainDashboard() {
     setRefreshing(true);
     const startTime = new Date();
     
-    logger.debug('=== DASHBOARD REFRESH START ===');
-    logger.info(`Dashboard refresh started at ${startTime.toLocaleTimeString()}`);
+    logger.debug('=== EXEC DASHBOARD REFRESH START ===');
+    logger.info(`Exec dashboard refresh started at ${startTime.toLocaleTimeString()}`);
     
     try {
       const bkService = new DashboardDataService(
@@ -127,25 +134,28 @@ export default function MainDashboard() {
         'PLKUS'
       );
 
-      const [bkData, plkData, bkCharts, plkCharts, bkDisconnected, plkDisconnected] = await Promise.all([
+      const [bkData, plkData, bkCharts, plkCharts, bkDisconnected, plkDisconnected, bkLocations, plkLocations] = await Promise.all([
         bkService.fetchDashboardData('BKUS'),
         plkService.fetchDashboardData('PLKUS'),
         bkService.fetchChartData('BKUS'),
         plkService.fetchChartData('PLKUS'),
         bkService.fetchDisconnectedKiosks('BKUS'),
         plkService.fetchDisconnectedKiosks('PLKUS'),
+        bkService.fetchKioskLocations('BKUS'),
+        plkService.fetchKioskLocations('PLKUS'),
       ]);
 
       setStats({ BKUS: bkData, PLKUS: plkData });
       setChartData({ BKUS: bkCharts, PLKUS: plkCharts });
       setDisconnectedKiosks({ BKUS: bkDisconnected, PLKUS: plkDisconnected });
+      setKioskLocations({ BKUS: bkLocations || [], PLKUS: plkLocations || [] });
       
       const endTime = new Date();
       const duration = ((endTime.getTime() - startTime.getTime()) / 1000).toFixed(2);
-      logger.info(`Dashboard refresh completed in ${duration}s`);
+      logger.info(`Exec dashboard refresh completed in ${duration}s`);
       logger.info(`Stats - BK-US: ${bkData.onlineKiosks}/${bkData.totalKiosks} online, PLK-US: ${plkData.onlineKiosks}/${plkData.totalKiosks} online`);
     } catch (error) {
-      logger.error('Dashboard refresh failed:', error);
+      logger.error('Exec dashboard refresh failed:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -188,7 +198,7 @@ export default function MainDashboard() {
       <div className="h-full p-4">
         <div className="h-full grid grid-cols-2 gap-4">
           {/* BK-US Column */}
-          <div className="flex flex-col space-y-3">
+          <div className="flex flex-col space-y-3 h-full">
             {/* BK-US Header with Logo */}
             <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
@@ -196,13 +206,13 @@ export default function MainDashboard() {
                   <Image src="/nr-tv-dashboard/bk-us.png" alt="Burger King" width={56} height={56} className="object-contain" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">BK-US Alerts</h2>
+                  <h2 className="text-2xl font-bold text-white">BK-US Executive View</h2>
                   <p className="text-xs text-emerald-50">Burger King United States</p>
                 </div>
               </div>
             </div>
 
-            {/* Row 1: Stats */}
+            {/* Row 2: Stats */}
             <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
@@ -228,54 +238,19 @@ export default function MainDashboard() {
               />
             </div>
 
-            {/* Row 2: US Map */}
+            {/* Row 3: US Map - Increased Height */}
             <div className="bg-gray-800 rounded-xl border-2 border-emerald-600 shadow-lg overflow-hidden flex-1">
               <div className="px-3 py-2 border-b border-emerald-600">
-                <h3 className="text-base font-bold text-emerald-400">Order Failure Map (Today)</h3>
+                <h3 className="text-base font-bold text-emerald-400">Kiosk Status Map (Online/Offline)</h3>
               </div>
               <div className="p-3 h-[calc(100%-48px)]">
-                <AlertHeatmap data={chartData.BKUS.alertHeatmap} />
-              </div>
-            </div>
-
-            {/* Row 3: Charts */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-800 rounded-xl border-2 border-emerald-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-emerald-400">Order Failure Trend (1 Week)</h3>
-                <div className="h-[200px]">
-                  {chartData.BKUS.orderFailureTrend.length > 0 ? (
-                    <ConfigurableLineChart
-                      config={{ title: 'BK-US Order Failure Trend', colors: { primary: '#10b981' } }}
-                      data={chartData.BKUS.orderFailureTrend}
-                    />
-                  ) : (
-                    <div className="h-full flex items-center justify-center bg-gray-50 rounded">
-                      <div className="text-gray-400 text-gray-600">Loading chart...</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-gray-800 rounded-xl border-2 border-emerald-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-emerald-400">Order Failure Types (1 Week)</h3>
-                <div className="h-[200px]">
-                  {chartData.BKUS.orderFailureTypes.length > 0 ? (
-                    <ConfigurableBarChart
-                      config={{ title: 'BK-US Order Failure Types', colors: { primary: '#10b981' }, orientation: 'horizontal' }}
-                      data={chartData.BKUS.orderFailureTypes}
-                    />
-                  ) : (
-                    <div className="h-full flex items-center justify-center bg-gray-50 rounded">
-                      <div className="text-gray-400 text-gray-600">Loading chart...</div>
-                    </div>
-                  )}
-                </div>
+                <KioskLocationMap data={kioskLocations.BKUS} />
               </div>
             </div>
           </div>
 
           {/* PLK-US Column */}
-          <div className="flex flex-col space-y-3">
+          <div className="flex flex-col space-y-3 h-full">
             {/* PLK-US Header with Logo and Background */}
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
@@ -283,13 +258,13 @@ export default function MainDashboard() {
                   <Image src="/nr-tv-dashboard/plk-us.png" alt="Popeyes" width={56} height={56} className="object-contain" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">PLK-US Alerts</h2>
+                  <h2 className="text-2xl font-bold text-white">PLK-US Executive View</h2>
                   <p className="text-xs text-orange-50">Popeyes United States</p>
                 </div>
               </div>
             </div>
 
-            {/* Row 1: Stats */}
+            {/* Row 2: Stats */}
             <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
@@ -315,48 +290,13 @@ export default function MainDashboard() {
               />
             </div>
 
-            {/* Row 2: US Map */}
+            {/* Row 3: US Map - Increased Height */}
             <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg overflow-hidden flex-1">
               <div className="px-3 py-2 border-b border-orange-600">
-                <h3 className="text-base font-bold text-orange-400">Order Failure Map (Today)</h3>
+                <h3 className="text-base font-bold text-orange-400">Kiosk Status Map (Online/Offline)</h3>
               </div>
               <div className="p-3 h-[calc(100%-48px)]">
-                <AlertHeatmap data={chartData.PLKUS.alertHeatmap} />
-              </div>
-            </div>
-
-            {/* Row 3: Charts */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Trend (1 Week)</h3>
-                <div className="h-[200px]">
-                  {chartData.PLKUS.orderFailureTrend.length > 0 ? (
-                    <ConfigurableLineChart
-                      config={{ title: 'PLK-US Order Failure Trend', colors: { primary: '#f97316' } }}
-                      data={chartData.PLKUS.orderFailureTrend}
-                    />
-                  ) : (
-                    <div className="h-full flex items-center justify-center bg-gray-50 rounded">
-                      <div className="text-gray-400 text-gray-600">Loading chart...</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-gray-800 rounded-xl border-2 border-orange-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-orange-400">Order Failure Types (1 Week)</h3>
-                <div className="h-[200px]">
-                  {chartData.PLKUS.orderFailureTypes.length > 0 ? (
-                    <ConfigurableBarChart
-                      config={{ title: 'PLK-US Order Failure Types', colors: { primary: '#f97316' }, orientation: 'horizontal' }}
-                      data={chartData.PLKUS.orderFailureTypes}
-                    />
-                  ) : (
-                    <div className="h-full flex items-center justify-center bg-gray-50 rounded">
-                      <div className="text-gray-400 text-gray-600">Loading chart...</div>
-                    </div>
-                  )}
-                </div>
+                <KioskLocationMap data={kioskLocations.PLKUS} />
               </div>
             </div>
           </div>
