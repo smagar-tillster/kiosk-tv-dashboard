@@ -98,7 +98,7 @@ nssm install TV-Dashboard-Frontend
 **Configuration:**
 - Path: `C:\Program Files\nodejs\node.exe`
 - Startup directory: `<your-path>\tv-dashboard`
-- Arguments: `node_modules\next\dist\bin\next start`
+- Arguments: ` `
 - Startup type: Automatic
 
 **Start:**

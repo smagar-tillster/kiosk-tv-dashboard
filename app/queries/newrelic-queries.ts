@@ -410,12 +410,448 @@ export const NEWRELIC_QUERIES = {
       since today until now limit max
     `,
   },
+
+  // KFC-GT Queries
+  KFCGT: {
+    // Total Stores Count
+    totalStores: `
+      from Log select uniqueCount(ks.StoreName) where ks.KioskStatus in ('1','2')  WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+    `,
+    
+    // Total Kiosks Count
+    totalKiosks: `
+      from Log select uniqueCount(concat(ks.StoreName,ks.KioskName)) where ks.KioskStatus in ('1','2')  WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+    `,
+    
+    // Online and Offline Stores
+    storeStatus: `
+    SELECT 
+        filter(count(*), WHERE latestStatus = '1') AS onlineStores,
+        filter(count(*), WHERE latestStatus = '2') AS offlineStores
+      FROM (
+        SELECT latest(ks.KioskStatus) AS latestStatus 
+        FROM Log 
+        FACET ks.StoreName limit max 
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max 
+    `,
+    
+    // Online and Offline Kiosks
+    kioskStatus: `
+      SELECT 
+        filter(count(*), WHERE latestStatus = '1') AS onlineKiosks,
+        filter(count(*), WHERE latestStatus = '2') AS offlineKiosks
+      FROM (
+        SELECT latest(ks.KioskStatus) AS latestStatus 
+        FROM Log 
+        FACET ks.StoreName, ks.KioskName limit max 
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+    `,
+
+    // Order Failure Trend (Line Chart)
+    orderFailureTrend: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      WITH TIMEZONE 'America/Los_Angeles'
+      facet dateOf(timestamp)
+      SINCE last week UNTIL now limit max
+    `,
+
+    // Type of Issues (Heatmap/Bubble Map)
+    typeOfIssues: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertLevelName = 'Error'  
+      facet ks.AlertCategoryName 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now limit max
+    `,
+
+    // Order Failure Types (Bar Chart)
+    orderFailureTypes: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      facet cases(
+        where ks.AlertMessage like '%INSERT%' as 'POS Error', 
+        ks.AlertMessage like '%TERMINAL UPDATE IN PROGRESS%' as 'POS Error',
+        ks.AlertMessage like '%TERMINAL IS NOT CONFIGURED%' as 'POS Error',  
+        ks.AlertMessage like '%Employee is not logged in%' as 'POS Error',
+        ks.AlertMessage like '%SOAPFaultException error was: Server was unable to process request%' as 'POS Error',  
+        ks.AlertMessage like '%ErrorCode: 1 Description: Internal result code: 117%' as 'POS Error', 
+        ks.AlertMessage like '%ErrorCode: 2 Description: Internal Service Error%' as 'POS Error',
+        ks.AlertMessage like '%Property is not available%' as 'POS Error',
+        ks.AlertMessage like '%Employee Object Number % is in training mode, operation not allowed%' as 'POS Error',
+        ks.AlertMessage like '%Menu item definition not found for MenuItem%' as 'POS Error',
+        ks.AlertMessage like '%Service Timeout Detail: The service timed out waiting for the request to be processed%' as 'POS Error',
+        ks.AlertMessage like '%SubtotalMismatchException%' as 'Total mismatch',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH SICOM%' as 'Total mismatch',  
+        ks.AlertMessage like '%SocketTimeoutException%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%ErrorCode: 101%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%encountered Read timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Connection timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Place order failed - 0%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%java.net.SocketException: Connection%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%ConnectException: Connection %' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%java.net.UnknownHostException%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%No route to host%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%Connection reset%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%PLU IS INACTIVE Expected: 30000026%' as 'Donation-plu exception',
+        ks.AlertMessage like '%SKUMapException%' as 'Skumap Error', 
+        ks.AlertMessage like '%NullPointerException error was: null -> Triggered at com.tillster.kiosk.skumapper.SkuNode.<init>%' as 'Skumap Error', 
+        ks.AlertMessage like '%ErrorCode: 109%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get modifier group id of modifier%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get component id%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%INVALID ORDER ITEM - PLU IS INACTIVE%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Item unavailable%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Cannot be ordered : Out of MenuItem%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%menu_item_availability_insufficient%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%INVALID COUPON - AMOUNT%' as 'Coupon configuration error',
+        ks.AlertMessage like '%Attribute name "amount"%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID COUPON%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID ORDER VALUE MEAL%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Modifier requirements not met%' as 'Bad Order Payload',
+        ks.AlertMessage like '%check_calculator_internal_error, message=Value cannot be null%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Order number is invalid%' as 'Bad Order Payload',
+        ks.AlertMessage like '%INVALID ORDER TAX%' as 'Bad Order Payload',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH%' as 'Bad Order Payload',
+        ks.AlertMessage like '%After apply payments, there is a pending balance%' as 'Bad Order Payload',
+        ks.AlertMessage like '%' as 'Other'
+      ) 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since last week until now 
+      limit max
+    `,
+
+    // US Map Alert Heatmap
+    alertHeatmap: `
+      FROM Log 
+      select count(*) as 'Alerts' 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') and ks.AlertLevelName = 'Error'
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE today until now 
+      FACET city, state 
+      LIMIT MAX
+    `,
+
+    // Individual Kiosk Locations with Status
+    kioskLocations: `
+      SELECT latest(status) as status, latest(city) as city, latest(state) as state
+      FROM KioskStatusEvent
+      FACET storeName, kioskName
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE 1 hour ago 
+      LIMIT MAX
+    `,
+
+    // Order Failure by POS
+    orderFailureByPOS: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      facet pos 
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE last week until now
+      limit max
+    `,
+
+    // Order Failure Types Today
+    orderFailureTypesToday: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      facet cases(
+        ks.AlertMessage like '%INSERT%' as 'POS Error', 
+        ks.AlertMessage like '%TERMINAL UPDATE IN PROGRESS%' as 'POS Error',
+        ks.AlertMessage like '%TERMINAL IS NOT CONFIGURED%' as 'POS Error',  
+        ks.AlertMessage like '%Employee is not logged in%' as 'POS Error',
+        ks.AlertMessage like '%SOAPFaultException error was: Server was unable to process request%' as 'POS Error',  
+        ks.AlertMessage like '%ErrorCode: 1 Description: Internal result code: 117%' as 'POS Error', 
+        ks.AlertMessage like '%ErrorCode: 2 Description: Internal Service Error%' as 'POS Error',
+        ks.AlertMessage like '%Property is not available%' as 'POS Error',
+        ks.AlertMessage like '%Employee Object Number % is in training mode, operation not allowed%' as 'POS Error',
+        ks.AlertMessage like '%Menu item definition not found for MenuItem%' as 'POS Error',
+        ks.AlertMessage like '%Service Timeout Detail: The service timed out waiting for the request to be processed%' as 'POS Error',
+        ks.AlertMessage like '%SubtotalMismatchException%' as 'Total mismatch',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH SICOM%' as 'Total mismatch',  
+        ks.AlertMessage like '%SocketTimeoutException%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%ErrorCode: 101%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%encountered Read timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Connection timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Place order failed - 0%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%java.net.SocketException: Connection%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%ConnectException: Connection %' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%java.net.UnknownHostException%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%No route to host%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%Connection reset%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%PLU IS INACTIVE Expected: 30000026%' as 'Donation-plu exception',
+        ks.AlertMessage like '%SKUMapException%' as 'Skumap Error', 
+        ks.AlertMessage like '%NullPointerException error was: null -> Triggered at com.tillster.kiosk.skumapper.SkuNode.<init>%' as 'Skumap Error', 
+        ks.AlertMessage like '%ErrorCode: 109%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get modifier group id of modifier%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get component id%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%INVALID ORDER ITEM - PLU IS INACTIVE%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Item unavailable%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Cannot be ordered : Out of MenuItem%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%menu_item_availability_insufficient%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%INVALID COUPON - AMOUNT%' as 'Coupon configuration error',
+        ks.AlertMessage like '%Attribute name "amount"%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID COUPON%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID ORDER VALUE MEAL%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Modifier requirements not met%' as 'Bad Order Payload',
+        ks.AlertMessage like '%check_calculator_internal_error, message=Value cannot be null%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Order number is invalid%' as 'Bad Order Payload',
+        ks.AlertMessage like '%INVALID ORDER TAX%' as 'Bad Order Payload',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH%' as 'Bad Order Payload',
+        ks.AlertMessage like '%After apply payments, there is a pending balance%' as 'Bad Order Payload',
+        ks.AlertMessage like '%' as 'Other'
+      ) 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now 
+      limit max
+    `,
+
+    // Disconnected Kiosks (Compare current with 1 week ago)
+    disconnectedKiosks: `
+      from SystemSample 
+      select uniqueCount(fullHostname) 
+      since 1 DAY AGO 
+      COMPARE WITH 1 WEEK AGO
+    `,
+
+    // Last Failed Order (timestamp and store name)
+    lastFailedOrder: `
+      FROM Log 
+      select latest(timestamp), latest(ks.StoreName)
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now limit max
+    `,
+  },
+
+  // KFC-MX Queries
+  KFCMX: {
+    // Total Stores Count
+    totalStores: `
+      from Log select uniqueCount(ks.StoreName) where ks.KioskStatus in ('1','2')  WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+    `,
+    
+    // Total Kiosks Count
+    totalKiosks: `
+      from Log select uniqueCount(concat(ks.StoreName,ks.KioskName)) where ks.KioskStatus in ('1','2')  WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+    `,
+    
+    // Online and Offline Stores
+    storeStatus: `
+    SELECT 
+        filter(count(*), WHERE latestStatus = '1') AS onlineStores,
+        filter(count(*), WHERE latestStatus = '2') AS offlineStores
+      FROM (
+        SELECT latest(ks.KioskStatus) AS latestStatus 
+        FROM Log 
+        FACET ks.StoreName limit max 
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max 
+    `,
+    
+    // Online and Offline Kiosks
+    kioskStatus: `
+      SELECT 
+        filter(count(*), WHERE latestStatus = '1') AS onlineKiosks,
+        filter(count(*), WHERE latestStatus = '2') AS offlineKiosks
+      FROM (
+        SELECT latest(ks.KioskStatus) AS latestStatus 
+        FROM Log 
+        FACET ks.StoreName, ks.KioskName limit max 
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+    `,
+
+    // Order Failure Trend (Line Chart)
+    orderFailureTrend: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      WITH TIMEZONE 'America/Los_Angeles'
+      facet dateOf(timestamp)
+      SINCE last week UNTIL now limit max
+    `,
+
+    // Type of Issues (Heatmap/Bubble Map)
+    typeOfIssues: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertLevelName = 'Error'  
+      facet ks.AlertCategoryName 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now limit max
+    `,
+
+    // Order Failure Types (Bar Chart)
+    orderFailureTypes: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      facet cases(
+        where ks.AlertMessage like '%INSERT%' as 'POS Error', 
+        ks.AlertMessage like '%TERMINAL UPDATE IN PROGRESS%' as 'POS Error',
+        ks.AlertMessage like '%TERMINAL IS NOT CONFIGURED%' as 'POS Error',  
+        ks.AlertMessage like '%Employee is not logged in%' as 'POS Error',
+        ks.AlertMessage like '%SOAPFaultException error was: Server was unable to process request%' as 'POS Error',  
+        ks.AlertMessage like '%ErrorCode: 1 Description: Internal result code: 117%' as 'POS Error', 
+        ks.AlertMessage like '%ErrorCode: 2 Description: Internal Service Error%' as 'POS Error',
+        ks.AlertMessage like '%Property is not available%' as 'POS Error',
+        ks.AlertMessage like '%Employee Object Number % is in training mode, operation not allowed%' as 'POS Error',
+        ks.AlertMessage like '%Menu item definition not found for MenuItem%' as 'POS Error',
+        ks.AlertMessage like '%Service Timeout Detail: The service timed out waiting for the request to be processed%' as 'POS Error',
+        ks.AlertMessage like '%SubtotalMismatchException%' as 'Total mismatch',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH SICOM%' as 'Total mismatch',  
+        ks.AlertMessage like '%SocketTimeoutException%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%ErrorCode: 101%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%encountered Read timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Connection timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Place order failed - 0%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%java.net.SocketException: Connection%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%ConnectException: Connection %' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%java.net.UnknownHostException%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%No route to host%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%Connection reset%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%PLU IS INACTIVE Expected: 30000026%' as 'Donation-plu exception',
+        ks.AlertMessage like '%SKUMapException%' as 'Skumap Error', 
+        ks.AlertMessage like '%NullPointerException error was: null -> Triggered at com.tillster.kiosk.skumapper.SkuNode.<init>%' as 'Skumap Error', 
+        ks.AlertMessage like '%ErrorCode: 109%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get modifier group id of modifier%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get component id%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%INVALID ORDER ITEM - PLU IS INACTIVE%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Item unavailable%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Cannot be ordered : Out of MenuItem%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%menu_item_availability_insufficient%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%INVALID COUPON - AMOUNT%' as 'Coupon configuration error',
+        ks.AlertMessage like '%Attribute name "amount"%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID COUPON%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID ORDER VALUE MEAL%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Modifier requirements not met%' as 'Bad Order Payload',
+        ks.AlertMessage like '%check_calculator_internal_error, message=Value cannot be null%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Order number is invalid%' as 'Bad Order Payload',
+        ks.AlertMessage like '%INVALID ORDER TAX%' as 'Bad Order Payload',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH%' as 'Bad Order Payload',
+        ks.AlertMessage like '%After apply payments, there is a pending balance%' as 'Bad Order Payload',
+        ks.AlertMessage like '%' as 'Other'
+      ) 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since last week until now 
+      limit max
+    `,
+
+    // US Map Alert Heatmap
+    alertHeatmap: `
+      FROM Log 
+      select count(*) as 'Alerts' 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') and ks.AlertLevelName = 'Error'
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE today until now 
+      FACET city, state 
+      LIMIT MAX
+    `,
+
+    // Individual Kiosk Locations with Status
+    kioskLocations: `
+      SELECT latest(status) as status, latest(city) as city, latest(state) as state
+      FROM KioskStatusEvent
+      FACET storeName, kioskName
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE 1 hour ago 
+      LIMIT MAX
+    `,
+
+    // Order Failure by POS
+    orderFailureByPOS: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      facet pos 
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE last week until now
+      limit max
+    `,
+
+    // Order Failure Types Today
+    orderFailureTypesToday: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      facet cases(
+        ks.AlertMessage like '%INSERT%' as 'POS Error', 
+        ks.AlertMessage like '%TERMINAL UPDATE IN PROGRESS%' as 'POS Error',
+        ks.AlertMessage like '%TERMINAL IS NOT CONFIGURED%' as 'POS Error',  
+        ks.AlertMessage like '%Employee is not logged in%' as 'POS Error',
+        ks.AlertMessage like '%SOAPFaultException error was: Server was unable to process request%' as 'POS Error',  
+        ks.AlertMessage like '%ErrorCode: 1 Description: Internal result code: 117%' as 'POS Error', 
+        ks.AlertMessage like '%ErrorCode: 2 Description: Internal Service Error%' as 'POS Error',
+        ks.AlertMessage like '%Property is not available%' as 'POS Error',
+        ks.AlertMessage like '%Employee Object Number % is in training mode, operation not allowed%' as 'POS Error',
+        ks.AlertMessage like '%Menu item definition not found for MenuItem%' as 'POS Error',
+        ks.AlertMessage like '%Service Timeout Detail: The service timed out waiting for the request to be processed%' as 'POS Error',
+        ks.AlertMessage like '%SubtotalMismatchException%' as 'Total mismatch',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH SICOM%' as 'Total mismatch',  
+        ks.AlertMessage like '%SocketTimeoutException%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%ErrorCode: 101%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%encountered Read timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Connection timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Place order failed - 0%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%java.net.SocketException: Connection%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%ConnectException: Connection %' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%java.net.UnknownHostException%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%No route to host%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%Connection reset%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%PLU IS INACTIVE Expected: 30000026%' as 'Donation-plu exception',
+        ks.AlertMessage like '%SKUMapException%' as 'Skumap Error', 
+        ks.AlertMessage like '%NullPointerException error was: null -> Triggered at com.tillster.kiosk.skumapper.SkuNode.<init>%' as 'Skumap Error', 
+        ks.AlertMessage like '%ErrorCode: 109%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get modifier group id of modifier%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get component id%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%INVALID ORDER ITEM - PLU IS INACTIVE%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Item unavailable%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Cannot be ordered : Out of MenuItem%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%menu_item_availability_insufficient%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%INVALID COUPON - AMOUNT%' as 'Coupon configuration error',
+        ks.AlertMessage like '%Attribute name "amount"%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID COUPON%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID ORDER VALUE MEAL%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Modifier requirements not met%' as 'Bad Order Payload',
+        ks.AlertMessage like '%check_calculator_internal_error, message=Value cannot be null%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Order number is invalid%' as 'Bad Order Payload',
+        ks.AlertMessage like '%INVALID ORDER TAX%' as 'Bad Order Payload',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH%' as 'Bad Order Payload',
+        ks.AlertMessage like '%After apply payments, there is a pending balance%' as 'Bad Order Payload',
+        ks.AlertMessage like '%' as 'Other'
+      ) 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now 
+      limit max
+    `,
+
+    // Disconnected Kiosks (Compare current with 1 week ago)
+    disconnectedKiosks: `
+      from SystemSample 
+      select uniqueCount(fullHostname) 
+      since 1 DAY AGO 
+      COMPARE WITH 1 WEEK AGO
+    `,
+
+    // Last Failed Order (timestamp and store name)
+    lastFailedOrder: `
+      FROM Log 
+      select latest(timestamp), latest(ks.StoreName)
+      where ks.AlertCategoryName in ('Order', 'CalcTotal') 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now limit max
+    `,
+  },
 };
 
 /**
  * Build GraphQL query for NewRelic NerdGraph API
  */
-export function buildNerdGraphQuery(accountId: string, nrqlQuery: string, tenant?: 'BKUS' | 'PLKUS'): string {
+export function buildNerdGraphQuery(accountId: string, nrqlQuery: string, tenant?: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): string {
   // Hardcode account IDs if empty (fallback for environment variable issues)
   // BKUS: 4502664, PLKUS: 4817770
   let finalAccountId = accountId;

@@ -28,9 +28,9 @@ export interface ChartData {
 export class DashboardDataService {
   private connector: NewRelicConnector;
   private accountId: string;
-  private tenant: 'BKUS' | 'PLKUS';
+  private tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX';
 
-  constructor(accountId: string, apiKey: string, tenant: 'BKUS' | 'PLKUS') {
+  constructor(accountId: string, apiKey: string, tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX') {
     this.connector = new NewRelicConnector(apiKey, accountId, tenant);
     this.accountId = accountId;
     this.tenant = tenant;
@@ -39,7 +39,7 @@ export class DashboardDataService {
   /**
    * Fetch total stores and kiosks count
    */
-  async fetchTotalCounts(tenant: 'BKUS' | 'PLKUS'): Promise<{
+  async fetchTotalCounts(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<{
     stores: number;
     kiosks: number;
   }> {
@@ -52,9 +52,21 @@ export class DashboardDataService {
         this.executeQuery(queries.totalKiosks),
       ]);
 
-      logger.debug('kiosksResponse:', JSON.stringify(kiosksResponse));
-      const stores = storesResponse[0]?.["uniqueCount.storeName"] || 0;
-      const kiosks = kiosksResponse[0]?.["uniqueCount.concat(storeName, kioskName)"] || 0;
+      logger.debug('Total Counts Response:', 'stores=', storesResponse, 'kiosks=', kiosksResponse);
+      
+      // Handle different field names for different tenants
+      let stores = 0;
+      let kiosks = 0;
+      
+      if (tenant === 'KFCGT' || tenant === 'KFCMX') {
+        stores = storesResponse[0]?.["uniqueCount.ks.StoreName"] || 0;
+        kiosks = kiosksResponse[0]?.["uniqueCount.concat(ks.StoreName,ks.KioskName)"] || 0;
+      } else {
+        stores = storesResponse[0]?.["uniqueCount.storeName"] || 0;
+        kiosks = kiosksResponse[0]?.["uniqueCount.concat(storeName, kioskName)"] || 0;
+      }
+      
+      logger.debug(`Parsed ${tenant} counts: stores=${stores}, kiosks=${kiosks}`);
 
       return { stores, kiosks };
     } catch (error) {
@@ -66,7 +78,7 @@ export class DashboardDataService {
   /**
    * Fetch store and kiosk online/offline status
    */
-  async fetchStatus(tenant: 'BKUS' | 'PLKUS'): Promise<{
+  async fetchStatus(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<{
     onlineStores: number;
     offlineStores: number;
     onlineKiosks: number;
@@ -106,7 +118,7 @@ export class DashboardDataService {
   /**
    * Fetch all dashboard data for a tenant
    */
-  async fetchDashboardData(tenant: 'BKUS' | 'PLKUS'): Promise<DashboardStats> {
+  async fetchDashboardData(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<DashboardStats> {
     try {
       const [counts, status] = await Promise.all([
         this.fetchTotalCounts(tenant),
@@ -132,7 +144,7 @@ export class DashboardDataService {
   /**
    * Fetch chart data for a tenant
    */
-  async fetchChartData(tenant: 'BKUS' | 'PLKUS'): Promise<ChartData> {
+  async fetchChartData(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<ChartData> {
     try {
       const queries = NEWRELIC_QUERIES[tenant];
 
@@ -170,7 +182,7 @@ export class DashboardDataService {
   /**
    * Fetch individual kiosk locations with online/offline status
    */
-  async fetchKioskLocations(tenant: 'BKUS' | 'PLKUS'): Promise<any[]> {
+  async fetchKioskLocations(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<any[]> {
     try {
       const queries = NEWRELIC_QUERIES[tenant];
       const kioskLocations = await this.executeQuery(queries.kioskLocations);
@@ -193,7 +205,7 @@ export class DashboardDataService {
    * Fetch disconnected kiosks count (difference between current and 1 week ago)
    * Returns 0 if the difference is negative
    */
-  async fetchDisconnectedKiosks(tenant: 'BKUS' | 'PLKUS'): Promise<number> {
+  async fetchDisconnectedKiosks(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<number> {
     try {
       const queries = NEWRELIC_QUERIES[tenant];
       if (!queries.disconnectedKiosks) {
@@ -235,7 +247,7 @@ export class DashboardDataService {
   /**
    * Fetch last failed order information (timestamp and store name)
    */
-  async fetchLastFailedOrder(tenant: 'BKUS' | 'PLKUS'): Promise<{
+  async fetchLastFailedOrder(tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): Promise<{
     timestamp: number | null;
     storeName: string | null;
   }> {
@@ -250,9 +262,19 @@ export class DashboardDataService {
       
       if (response && response.length > 0) {
         const data = response[0];
+        logger.debug(`lastFailedOrder data for ${tenant}:`, data);
+        
+        // Handle different field names for different tenants
+        let storeName = null;
+        if (tenant === 'KFCGT' || tenant === 'KFCMX') {
+          storeName = data['latest.ks.StoreName'] || null;
+        } else {
+          storeName = data['latest.storeName'] || data['latest(storeName)'] || null;
+        }
+        
         return {
           timestamp: data['latest.timestamp'] || data['latest(timestamp)'] || null,
-          storeName: data['latest.storeName'] || data['latest(storeName)'] || null,
+          storeName: storeName,
         };
       }
       

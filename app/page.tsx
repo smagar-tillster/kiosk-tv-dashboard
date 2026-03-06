@@ -12,7 +12,7 @@ export default function Home() {
             Tillster Proactive Monitoring
           </h1>
           <p className="text-xl text-gray-600">
-            Real-time monitoring and analytics for BK-US & PLK-US
+            Real-time monitoring and analytics for BK-US, PLK-US, KFC-GT & KFC-MX
           </p>
         </div>
 
@@ -86,6 +86,31 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Activity className="h-3 w-3 text-orange-500" />
+                  Order Failure Analytics
+                </li>
+              </ul>
+            </div>
+          </Link>
+
+          {/* KFC LATM Dashboard Card */}
+          <Link href="/kfc-latm-dashboard">
+            <div className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-red-500">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-red-100 rounded-lg group-hover:bg-red-600 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-red-600 group-hover:text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">LATM - KFC GT&MX</h2>
+              </div>
+              <p className="text-gray-600 text-sm mb-3">
+                KFC Guatemala & Mexico dashboard with maps and charts
+              </p>
+              <ul className="space-y-1 text-xs text-gray-500">
+                <li className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-red-600" />
+                  Real-time Kiosk Status
+                </li>
+                <li className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-red-600" />
                   Order Failure Analytics
                 </li>
               </ul>
