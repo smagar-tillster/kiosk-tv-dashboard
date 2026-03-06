@@ -22,8 +22,8 @@ interface StatCardProps {
 function StatCard({ title, value, subtitle, loading }: StatCardProps) {
   // KFC red color scheme for both tenants
   const bgColor = 'bg-gradient-to-br from-red-50 to-rose-50';
-  const textColor = 'text-red-700';
-  const borderColor = 'border-red-200';
+  const textColor = 'text-red-500';
+  const borderColor = 'border-red-100';
   
   // Check if value is a percentage for special styling
   const isPercentage = value.includes('%');
@@ -49,7 +49,7 @@ function StatCard({ title, value, subtitle, loading }: StatCardProps) {
                   px-4 py-2 rounded-full
                   ${isHealthy 
                     ? 'bg-green-500' 
-                    : 'bg-red-500 animate-pulse shadow-lg shadow-red-500/50'
+                    : 'bg-red-400 animate-pulse shadow-lg shadow-red-400/50'
                   }
                 `}>
                   <span className="text-xl font-extrabold text-white whitespace-nowrap">{value}</span>
@@ -191,7 +191,7 @@ export default function KFCLATMDashboard() {
           {/* KFC-GT Column */}
           <div className="flex flex-col space-y-3">
             {/* KFC-GT Header with Logo */}
-            <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl p-3 shadow-lg">
+            <div className="bg-gradient-to-r from-red-400 to-red-300 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
                   <Image src="/nr-tv-dashboard/kfc-logo.png" alt="KFC Guatemala" width={56} height={56} className="w-full h-full object-cover" />
@@ -227,9 +227,9 @@ export default function KFCLATMDashboard() {
             </div>
 
             {/* Row 2: Map */}
-            <div className="bg-gray-800 rounded-xl border-2 border-red-600 shadow-lg overflow-hidden flex-1">
-              <div className="px-3 py-2 border-b border-red-600">
-                <h3 className="text-base font-bold text-red-400">Order Failure Map (Today)</h3>
+            <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg overflow-hidden flex-1">
+              <div className="px-3 py-2 border-b border-red-400">
+                <h3 className="text-base font-bold text-red-300">Order Failure Map (Today)</h3>
               </div>
               <div className="p-3 h-[calc(100%-48px)]">
                 <AlertHeatmap data={chartData.KFCGT.alertHeatmap} />
@@ -238,12 +238,12 @@ export default function KFCLATMDashboard() {
 
             {/* Row 3: Charts */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-800 rounded-xl border-2 border-red-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-red-400">Order Failure Trend (1 Week)</h3>
+              <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-red-300">Order Failure Trend (1 Week)</h3>
                 <div className="h-[200px]">
                   {chartData.KFCGT.orderFailureTrend.length > 0 ? (
                     <ConfigurableLineChart
-                      config={{ title: 'KFC-GT Order Failure Trend', colors: { primary: '#dc2626' } }}
+                      config={{ title: 'KFC-GT Order Failure Trend', colors: { primary: '#f87171' } }}
                       data={chartData.KFCGT.orderFailureTrend}
                     />
                   ) : (
@@ -254,12 +254,12 @@ export default function KFCLATMDashboard() {
                 </div>
               </div>
 
-              <div className="bg-gray-800 rounded-xl border-2 border-red-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-red-400">Order Failure Types (1 Week)</h3>
+              <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-red-300">Order Failure Types (1 Week)</h3>
                 <div className="h-[200px]">
                   {chartData.KFCGT.orderFailureTypes.length > 0 ? (
                     <ConfigurableBarChart
-                      config={{ title: 'KFC-GT Order Failure Types', colors: { primary: '#dc2626' }, orientation: 'horizontal' }}
+                      config={{ title: 'KFC-GT Order Failure Types', colors: { primary: '#f87171' }, orientation: 'horizontal' }}
                       data={chartData.KFCGT.orderFailureTypes}
                     />
                   ) : (
@@ -275,7 +275,7 @@ export default function KFCLATMDashboard() {
           {/* KFC-MX Column */}
           <div className="flex flex-col space-y-3">
             {/* KFC-MX Header with Logo and Background */}
-            <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl p-3 shadow-lg">
+            <div className="bg-gradient-to-r from-red-400 to-red-300 rounded-xl p-3 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
                   <Image src="/nr-tv-dashboard/kfc-logo.png" alt="KFC Mexico" width={56} height={56} className="w-full h-full object-cover" />
@@ -311,9 +311,9 @@ export default function KFCLATMDashboard() {
             </div>
 
             {/* Row 2: Map */}
-            <div className="bg-gray-800 rounded-xl border-2 border-red-600 shadow-lg overflow-hidden flex-1">
-              <div className="px-3 py-2 border-b border-red-600">
-                <h3 className="text-base font-bold text-red-400">Order Failure Map (Today)</h3>
+            <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg overflow-hidden flex-1">
+              <div className="px-3 py-2 border-b border-red-400">
+                <h3 className="text-base font-bold text-red-300">Order Failure Map (Today)</h3>
               </div>
               <div className="p-3 h-[calc(100%-48px)]">
                 <AlertHeatmap data={chartData.KFCMX.alertHeatmap} />
@@ -322,12 +322,12 @@ export default function KFCLATMDashboard() {
 
             {/* Row 3: Charts */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-800 rounded-xl border-2 border-red-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-red-400">Order Failure Trend (1 Week)</h3>
+              <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-red-300">Order Failure Trend (1 Week)</h3>
                 <div className="h-[200px]">
                   {chartData.KFCMX.orderFailureTrend.length > 0 ? (
                     <ConfigurableLineChart
-                      config={{ title: 'KFC-MX Order Failure Trend', colors: { primary: '#dc2626' } }}
+                      config={{ title: 'KFC-MX Order Failure Trend', colors: { primary: '#f87171' } }}
                       data={chartData.KFCMX.orderFailureTrend}
                     />
                   ) : (
@@ -338,12 +338,12 @@ export default function KFCLATMDashboard() {
                 </div>
               </div>
 
-              <div className="bg-gray-800 rounded-xl border-2 border-red-600 shadow-lg p-3">
-                <h3 className="text-sm font-bold mb-2 text-red-400">Order Failure Types (1 Week)</h3>
+              <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg p-3">
+                <h3 className="text-sm font-bold mb-2 text-red-300">Order Failure Types (1 Week)</h3>
                 <div className="h-[200px]">
                   {chartData.KFCMX.orderFailureTypes.length > 0 ? (
                     <ConfigurableBarChart
-                      config={{ title: 'KFC-MX Order Failure Types', colors: { primary: '#dc2626' }, orientation: 'horizontal' }}
+                      config={{ title: 'KFC-MX Order Failure Types', colors: { primary: '#f87171' }, orientation: 'horizontal' }}
                       data={chartData.KFCMX.orderFailureTypes}
                     />
                   ) : (
