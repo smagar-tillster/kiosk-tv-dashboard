@@ -4,20 +4,17 @@
  */
 import { logger } from '@/app/utils';
 
-export const NEWRELIC_QUERIES = {
-  // BK-US Queries
-  BKUS: {
-    // Total Stores Count
+export const NEWRELIC_QUERIES = (() => {
+  // Shared Kiosk-based queries (KioskStatusEvent / KioskAlertEvent)
+  const KIOSK = {
     totalStores: `
       from KioskStatusEvent select uniqueCount(storeName) where status in ('OFFLINE','ONLINE') WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
-    
-    // Total Kiosks Count
+
     totalKiosks: `
       from KioskStatusEvent select uniqueCount(concat(storeName, kioskName)) where status in ('OFFLINE','ONLINE') WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
-    
-    // Online and Offline Stores
+
     storeStatus: `
       SELECT 
         filter(count(*), WHERE latestStatus = 'ONLINE') AS onlineStores,
@@ -26,11 +23,9 @@ export const NEWRELIC_QUERIES = {
         SELECT latest(status) AS latestStatus 
         FROM KioskStatusEvent 
         FACET storeName limit max 
-      ) WITH TIMEZONE 'America/Los_Angeles'
-       since 1 hour ago limit max
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
-    
-    // Online and Offline Kiosks
+
     kioskStatus: `
       SELECT 
         filter(count(*), WHERE latestStatus = 'ONLINE') AS onlineKiosks,
@@ -39,11 +34,9 @@ export const NEWRELIC_QUERIES = {
         SELECT latest(status) AS latestStatus 
         FROM KioskStatusEvent 
         FACET storeName, kioskName limit max 
-      ) WITH TIMEZONE 'America/Los_Angeles'
-       since 1 hour ago limit max
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
 
-    // Order Failure Trend (Line Chart)
     orderFailureTrend: `
       FROM KioskAlertEvent 
       select count(*) 
@@ -53,7 +46,6 @@ export const NEWRELIC_QUERIES = {
       SINCE last week UNTIL now limit max
     `,
 
-    // Type of Issues (Heatmap/Bubble Map)
     typeOfIssues: `
       FROM KioskAlertEvent 
       select count(*) 
@@ -63,7 +55,6 @@ export const NEWRELIC_QUERIES = {
       since today until now limit max
     `,
 
-    // Order Failure Types (Bar Chart)
     orderFailureTypes: `
       FROM KioskAlertEvent select count(*)
       where store_online = 1 and alert_category_name in ('Order', 'CalcTotal')
@@ -101,41 +92,6 @@ export const NEWRELIC_QUERIES = {
       since last week until now limit max
     `,
 
-    // US Map Alert Heatmap
-    alertHeatmap: `
-      FROM KioskAlertEvent 
-      select count(*) as 'Alerts' 
-      where store_online = 1 
-      and alert_category_name in ('Order', 'CalcTotal') 
-      and alert_level = '1' 
-      WITH TIMEZONE 'America/Los_Angeles'
-      SINCE today until now
-      FACET city, state 
-      LIMIT MAX
-    `,
-
-    // Individual Kiosk Locations with Status
-    kioskLocations: `
-      SELECT latest(status) as status, latest(city) as city, latest(state) as state
-      FROM KioskStatusEvent
-      FACET storeName, kioskName
-      with TIMEZONE 'America/Los_Angeles'
-      since 1 hour ago until now
-      limit max
-    `,
-
-    // Order Failure by POS
-    orderFailureByPOS: `
-      FROM KioskAlertEvent 
-      select count(*) 
-      where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
-      facet pos_make 
-      WITH TIMEZONE 'America/Los_Angeles'
-      since last week until now
-      limit max
-    `,
-
-    // Order Failure Types Today
     orderFailureTypesToday: `
       FROM KioskAlertEvent select count(*)
       where store_online = 1 and alert_category_name in ('Order', 'CalcTotal')
@@ -173,7 +129,37 @@ export const NEWRELIC_QUERIES = {
       since today until now limit max
     `,
 
-    // Disconnected Kiosks (Compare current with 1 week ago)
+    alertHeatmap: `
+      FROM KioskAlertEvent 
+      select count(*) as 'Alerts' 
+      where store_online = 1 
+      and alert_category_name in ('Order', 'CalcTotal') 
+      and alert_level = '1' 
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE today until now
+      FACET city, state 
+      LIMIT MAX
+    `,
+
+    kioskLocations: `
+      SELECT latest(status) as status, latest(city) as city, latest(state) as state
+      FROM KioskStatusEvent
+      FACET storeName, kioskName
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE 1 hour ago 
+      LIMIT MAX
+    `,
+
+    orderFailureByPOS: `
+      FROM KioskAlertEvent 
+      select count(*) 
+      where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
+      facet pos_make 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since last week until now
+      limit max
+    `,
+
     disconnectedKiosks: `
       from SystemSample 
       select uniqueCount(fullHostname) 
@@ -181,7 +167,6 @@ export const NEWRELIC_QUERIES = {
       COMPARE WITH 1 WEEK AGO
     `,
 
-    // Last Failed Order (timestamp and store name)
     lastFailedOrder: `
       FROM KioskAlertEvent 
       select latest(timestamp), latest(storeName)
@@ -189,65 +174,217 @@ export const NEWRELIC_QUERIES = {
       WITH TIMEZONE 'America/Los_Angeles'
       since today until now limit max
     `,
-  },
+  };
 
-  // PLK-US Queries
-  PLKUS: {
-    // Total Stores Count
+  // Shared Log-based queries (Log events for KFC tenants - currently not used)
+  const LOG = {
     totalStores: `
-      from KioskStatusEvent select uniqueCount(storeName) where status in ('OFFLINE','ONLINE') WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+      from Log select uniqueCount(ks.StoreName) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
-    
-    // Total Kiosks Count
+
     totalKiosks: `
-       from KioskStatusEvent select uniqueCount(concat(storeName, kioskName)) where status in ('OFFLINE','ONLINE') WITH TIMEZONE 'America/Los_Angeles'   since 1 hour ago limit max
+      from Log select uniqueCount(concat(ks.StoreName, ks.KioskName)) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
-    
-    // Online and Offline Stores
+
     storeStatus: `
-      SELECT 
+    SELECT 
         filter(count(*), WHERE latestStatus = 'ONLINE') AS onlineStores,
         filter(count(*), WHERE latestStatus = 'OFFLINE') AS offlineStores
       FROM (
-        SELECT latest(status) AS latestStatus 
-        FROM KioskStatusEvent 
-        FACET storeName limit max 
-      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
+        SELECT latest(ks.KioskStatus) AS latestStatus 
+        FROM Log 
+        FACET ks.StoreName limit max 
+      ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max 
     `,
-    
-    // Online and Offline Kiosks
+
     kioskStatus: `
       SELECT 
         filter(count(*), WHERE latestStatus = 'ONLINE') AS onlineKiosks,
         filter(count(*), WHERE latestStatus = 'OFFLINE') AS offlineKiosks
       FROM (
-        SELECT latest(status) AS latestStatus 
-        FROM KioskStatusEvent 
-        FACET storeName, kioskName limit max 
+        SELECT latest(ks.KioskStatus) AS latestStatus 
+        FROM Log 
+        FACET ks.StoreName, ks.KioskName limit max 
       ) WITH TIMEZONE 'America/Los_Angeles' since 1 hour ago limit max
     `,
 
-    // Order Failure Trend (Line Chart)
     orderFailureTrend: `
-      FROM KioskAlertEvent 
+      FROM Log 
       select count(*) 
-      where store_online = 1 and alert_category_name in ('Order', 'CalcTotal')
+      where ks.AlertCategoryName in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') or ks.AlertCategory in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') 
       WITH TIMEZONE 'America/Los_Angeles'
       facet dateOf(timestamp)
       SINCE last week UNTIL now limit max
     `,
 
-    // Type of Issues (Heatmap/Bubble Map)
     typeOfIssues: `
-      FROM KioskAlertEvent 
+      FROM Log 
       select count(*) 
-      where alert_level = '1' and store_online = 1 
-      facet alert_category_name 
+      where ks.AlertLevelName = 'Error'  or ks.AlertLevel = 'Error'
+      facet ks.AlertCategoryName 
       WITH TIMEZONE 'America/Los_Angeles'
       since today until now limit max
     `,
 
-    // Order Failure Types (Bar Chart)
+    orderFailureTypes: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') or ks.AlertCategory in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') 
+      facet cases(
+        ks.AlertMessage like '%INSERT%' as 'POS Error', 
+        ks.AlertMessage like '%TERMINAL UPDATE IN PROGRESS%' as 'POS Error',
+        ks.AlertMessage like '%TERMINAL IS NOT CONFIGURED%' as 'POS Error',  
+        ks.AlertMessage like '%Employee is not logged in%' as 'POS Error',
+        ks.AlertMessage like '%SOAPFaultException error was: Server was unable to process request%' as 'POS Error',  
+        ks.AlertMessage like '%ErrorCode: 1 Description: Internal result code: 117%' as 'POS Error', 
+        ks.AlertMessage like '%ErrorCode: 2 Description: Internal Service Error%' as 'POS Error',
+        ks.AlertMessage like '%Property is not available%' as 'POS Error',
+        ks.AlertMessage like '%Employee Object Number % is in training mode, operation not allowed%' as 'POS Error',
+        ks.AlertMessage like '%Menu item definition not found for MenuItem%' as 'POS Error',
+        ks.AlertMessage like '%Service Timeout Detail: The service timed out waiting for the request to be processed%' as 'POS Error',
+        ks.AlertMessage like '%SubtotalMismatchException%' as 'Total mismatch',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH SICOM%' as 'Total mismatch',  
+        ks.AlertMessage like '%SocketTimeoutException%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%ErrorCode: 101%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%encountered Read timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Connection timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Place order failed - 0%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%java.net.SocketException: Connection%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%ConnectException: Connection %' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%java.net.UnknownHostException%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%No route to host%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%Connection reset%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%PLU IS INACTIVE Expected: 30000026%' as 'Donation-plu exception',
+        ks.AlertMessage like '%SKUMapException%' as 'Skumap Error', 
+        ks.AlertMessage like '%NullPointerException error was: null -> Triggered at com.tillster.kiosk.skumapper.SkuNode.<init>%' as 'Skumap Error', 
+        ks.AlertMessage like '%ErrorCode: 109%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get modifier group id of modifier%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get component id%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%INVALID ORDER ITEM - PLU IS INACTIVE%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Item unavailable%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Cannot be ordered : Out of MenuItem%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%menu_item_availability_insufficient%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%INVALID COUPON - AMOUNT%' as 'Coupon configuration error',
+        ks.AlertMessage like '%Attribute name "amount"%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID COUPON%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID ORDER VALUE MEAL%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Modifier requirements not met%' as 'Bad Order Payload',
+        ks.AlertMessage like '%check_calculator_internal_error, message=Value cannot be null%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Order number is invalid%' as 'Bad Order Payload',
+        ks.AlertMessage like '%INVALID ORDER TAX%' as 'Bad Order Payload',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH%' as 'Bad Order Payload',
+        ks.AlertMessage like '%After apply payments, there is a pending balance%' as 'Bad Order Payload',
+        ks.AlertMessage like '%' as 'Other'
+      ) 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since last week until now 
+      limit max
+    `,
+
+    alertHeatmap: `
+      FROM Log 
+      select count(*) as 'Alerts' 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') or ks.AlertCategory in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') 
+      and (ks.AlertLevelName = 'Error' or ks.AlertLevel = 'Error')
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE today until now 
+      FACET ks.City, ks.State 
+      LIMIT MAX
+    `,
+
+    kioskLocations: `
+      SELECT latest(ks.KioskStatus) as status, latest(ks.City) as city, latest(ks.State) as state
+      FROM Log
+      FACET ks.StoreName, ks.KioskName
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE 1 hour ago 
+      LIMIT MAX
+    `,
+
+    orderFailureByPOS: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') or ks.AlertCategory in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL')
+      facet pos 
+      WITH TIMEZONE 'America/Los_Angeles'
+      SINCE last week until now
+      limit max
+    `,
+
+    orderFailureTypesToday: `
+      FROM Log 
+      select count(*) 
+      where ks.AlertCategoryName in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') or ks.AlertCategory in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL')
+      facet cases(
+        ks.AlertMessage like '%INSERT%' as 'POS Error', 
+        ks.AlertMessage like '%TERMINAL UPDATE IN PROGRESS%' as 'POS Error',
+        ks.AlertMessage like '%TERMINAL IS NOT CONFIGURED%' as 'POS Error',  
+        ks.AlertMessage like '%Employee is not logged in%' as 'POS Error',
+        ks.AlertMessage like '%SOAPFaultException error was: Server was unable to process request%' as 'POS Error',  
+        ks.AlertMessage like '%ErrorCode: 1 Description: Internal result code: 117%' as 'POS Error', 
+        ks.AlertMessage like '%ErrorCode: 2 Description: Internal Service Error%' as 'POS Error',
+        ks.AlertMessage like '%Property is not available%' as 'POS Error',
+        ks.AlertMessage like '%Employee Object Number % is in training mode, operation not allowed%' as 'POS Error',
+        ks.AlertMessage like '%Menu item definition not found for MenuItem%' as 'POS Error',
+        ks.AlertMessage like '%Service Timeout Detail: The service timed out waiting for the request to be processed%' as 'POS Error',
+        ks.AlertMessage like '%SubtotalMismatchException%' as 'Total mismatch',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH SICOM%' as 'Total mismatch',  
+        ks.AlertMessage like '%SocketTimeoutException%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%ErrorCode: 101%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%encountered Read timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Connection timed out%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%Place order failed - 0%' as 'Network Connection Timeout', 
+        ks.AlertMessage like '%java.net.SocketException: Connection%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%ConnectException: Connection %' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%java.net.UnknownHostException%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%No route to host%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%Connection reset%' as 'Network Issues (Connection refused/reset)',
+        ks.AlertMessage like '%PLU IS INACTIVE Expected: 30000026%' as 'Donation-plu exception',
+        ks.AlertMessage like '%SKUMapException%' as 'Skumap Error', 
+        ks.AlertMessage like '%NullPointerException error was: null -> Triggered at com.tillster.kiosk.skumapper.SkuNode.<init>%' as 'Skumap Error', 
+        ks.AlertMessage like '%ErrorCode: 109%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get modifier group id of modifier%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%Failed to get component id%' as 'Item out of stock or inactive', 
+        ks.AlertMessage like '%INVALID ORDER ITEM - PLU IS INACTIVE%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Item unavailable%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%Cannot be ordered : Out of MenuItem%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%menu_item_availability_insufficient%' as 'Item out of stock or inactive',
+        ks.AlertMessage like '%INVALID COUPON - AMOUNT%' as 'Coupon configuration error',
+        ks.AlertMessage like '%Attribute name "amount"%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID COUPON%' as 'Coupon configuration error',
+        ks.AlertMessage like '%INVALID ORDER VALUE MEAL%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Modifier requirements not met%' as 'Bad Order Payload',
+        ks.AlertMessage like '%check_calculator_internal_error, message=Value cannot be null%' as 'Bad Order Payload',
+        ks.AlertMessage like '%Order number is invalid%' as 'Bad Order Payload',
+        ks.AlertMessage like '%INVALID ORDER TAX%' as 'Bad Order Payload',
+        ks.AlertMessage like '%ORDER SUBTOTAL DOES MATCH%' as 'Bad Order Payload',
+        ks.AlertMessage like '%After apply payments, there is a pending balance%' as 'Bad Order Payload',
+        ks.AlertMessage like '%' as 'Other'
+      ) 
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now 
+      limit max
+    `,
+
+    disconnectedKiosks: `
+      from SystemSample 
+      select uniqueCount(fullHostname) 
+      since 1 DAY AGO 
+      COMPARE WITH 1 WEEK AGO
+    `,
+
+    lastFailedOrder: `
+      FROM Log 
+      select latest(timestamp), latest(ks.StoreName)
+      where (ks.AlertCategoryName in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL') or ks.AlertCategory in ('Order', 'CalcTotal', 'ORDER', 'CALCULATE_TOTAL')) 
+      and (ks.AlertLevelName = 'Error' or ks.AlertLevel = 'Error')
+      WITH TIMEZONE 'America/Los_Angeles'
+      since today until now limit max
+    `,
+  };
+
+  // PLK-US specific overrides (more detailed error categorization)
+  const PLKUS_OVERRIDES = {
     orderFailureTypes: `
       FROM KioskAlertEvent 
       select count(*) 
@@ -303,41 +440,6 @@ export const NEWRELIC_QUERIES = {
       limit max
     `,
 
-    // US Map Alert Heatmap
-    alertHeatmap: `
-      FROM KioskAlertEvent 
-      select count(*) as 'Alerts' 
-      where store_online = 1 
-      and alert_category_name in ('Order', 'CalcTotal') 
-      and alert_level = '1' 
-      WITH TIMEZONE 'America/Los_Angeles'
-      SINCE today until now 
-      FACET city, state 
-      LIMIT MAX
-    `,
-
-    // Individual Kiosk Locations with Status
-    kioskLocations: `
-      SELECT latest(status) as status, latest(city) as city, latest(state) as state
-      FROM KioskStatusEvent
-      FACET storeName, kioskName
-      WITH TIMEZONE 'America/Los_Angeles'
-      SINCE 1 hour ago 
-      LIMIT MAX
-    `,
-
-    // Order Failure by POS
-    orderFailureByPOS: `
-      FROM KioskAlertEvent 
-      select count(*) 
-      where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
-      facet pos_make 
-      WITH TIMEZONE 'America/Los_Angeles'
-      SINCE last week until now
-      limit max
-    `,
-
-    // Order Failure Types Today
     orderFailureTypesToday: `
       FROM KioskAlertEvent 
       select count(*) 
@@ -392,30 +494,21 @@ export const NEWRELIC_QUERIES = {
       since today until now 
       limit max
     `,
+  };
 
-    // Disconnected Kiosks (Compare current with 1 week ago)
-    disconnectedKiosks: `
-      from SystemSample 
-      select uniqueCount(fullHostname) 
-      since 1 DAY AGO 
-      COMPARE WITH 1 WEEK AGO
-    `,
-
-    // Last Failed Order (timestamp and store name)
-    lastFailedOrder: `
-      FROM KioskAlertEvent 
-      select latest(timestamp), latest(storeName)
-      where store_online = 1 and alert_category_name in ('Order', 'CalcTotal') 
-      WITH TIMEZONE 'America/Los_Angeles'
-      since today until now limit max
-    `,
-  },
-};
+  // Map tenants to the shared query sets, with per-tenant overrides if needed
+  return {
+    BKUS: { ...KIOSK },
+    PLKUS: { ...KIOSK, ...PLKUS_OVERRIDES },
+    KFCGT: { ...LOG },
+    KFCMX: { ...LOG },
+  };
+})();
 
 /**
  * Build GraphQL query for NewRelic NerdGraph API
  */
-export function buildNerdGraphQuery(accountId: string, nrqlQuery: string, tenant?: 'BKUS' | 'PLKUS'): string {
+export function buildNerdGraphQuery(accountId: string, nrqlQuery: string, tenant?: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX'): string {
   // Hardcode account IDs if empty (fallback for environment variable issues)
   // BKUS: 4502664, PLKUS: 4817770
   let finalAccountId = accountId;

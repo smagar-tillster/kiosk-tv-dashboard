@@ -7,7 +7,7 @@
 
 export interface TenantConfig {
   name: string;
-  tenant: 'BKUS' | 'PLKUS';
+  tenant: 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX';
   accountId: string;
   apiKey: string;
 }
@@ -72,15 +72,27 @@ export const DASHBOARD_CONFIG: DashboardConfig = {
 export const TENANT_CONFIG = {
   BKUS: {
     name: 'BK-US',
-    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_BKUS || process.env.NEWRELIC_TENANT_BKUS || 'BKUS') as 'BKUS' | 'PLKUS',
+    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_BKUS || process.env.NEWRELIC_TENANT_BKUS || 'BKUS') as 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX',
     accountId: process.env.NEXT_PUBLIC_NEWRELIC_ACCOUNT_ID_BKUS || process.env.NEWRELIC_ACCOUNT_ID_BKUS || '',
     apiKey: process.env.NEXT_PUBLIC_NEWRELIC_API_KEY_BKUS || process.env.NEWRELIC_API_KEY_BKUS || '',
   },
   PLKUS: {
     name: 'PLK-US',
-    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_PLKUS || process.env.NEWRELIC_TENANT_PLKUS || 'PLKUS') as 'BKUS' | 'PLKUS',
+    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_PLKUS || process.env.NEWRELIC_TENANT_PLKUS || 'PLKUS') as 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX',
     accountId: process.env.NEXT_PUBLIC_NEWRELIC_ACCOUNT_ID_PLKUS || process.env.NEWRELIC_ACCOUNT_ID_PLKUS || '',
     apiKey: process.env.NEXT_PUBLIC_NEWRELIC_API_KEY_PLKUS || process.env.NEWRELIC_API_KEY_PLKUS || '',
+  },
+  KFCGT: {
+    name: 'KFC-GT',
+    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_KFCGT || process.env.NEWRELIC_TENANT_KFCGT || 'KFCGT') as 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX',
+    accountId: process.env.NEXT_PUBLIC_NEWRELIC_ACCOUNT_ID_KFCGT || process.env.NEWRELIC_ACCOUNT_ID_KFCGT || '',
+    apiKey: process.env.NEXT_PUBLIC_NEWRELIC_API_KEY_KFCGT || process.env.NEWRELIC_API_KEY_KFCGT || '',
+  },
+  KFCMX: {
+    name: 'KFC-MX',
+    tenant: (process.env.NEXT_PUBLIC_NEWRELIC_TENANT_KFCMX || process.env.NEWRELIC_TENANT_KFCMX || 'KFCMX') as 'BKUS' | 'PLKUS' | 'KFCGT' | 'KFCMX',
+    accountId: process.env.NEXT_PUBLIC_NEWRELIC_ACCOUNT_ID_KFCMX || process.env.NEWRELIC_ACCOUNT_ID_KFCMX || '',
+    apiKey: process.env.NEXT_PUBLIC_NEWRELIC_API_KEY_KFCMX || process.env.NEWRELIC_API_KEY_KFCMX || '',
   },
 } as const;
 

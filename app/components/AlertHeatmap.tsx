@@ -4,58 +4,117 @@ import { useMemo, useEffect, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { getCityCoordinates, stateAbbrToName } from '@/app/config/city-coordinates';
+import { getGuatemalaCoordinates, guatemalaDepartmentAbbr } from '@/app/config/guatemala-coordinates';
+import { getMexicoCoordinates, mexicoStateAbbr } from '@/app/config/mexico-coordinates';
 
 interface AlertHeatmapProps {
   data: any[];
+  mapType?: 'USA' | 'GUATEMALA' | 'MEXICO';
 }
 
-export function AlertHeatmap({ data }: AlertHeatmapProps) {
+export function AlertHeatmap({ data, mapType = 'USA' }: AlertHeatmapProps) {
   const [mapReady, setMapReady] = useState(false);
 
-  // Load US map GeoJSON
+  // Load map GeoJSON based on mapType
   useEffect(() => {
     const loadMap = async () => {
       try {
-        const response = await fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json');
-        const geoJson = await response.json();
+        let response, geoJson, mapName;
         
-        // Filter out Alaska, Hawaii, and territories to show only contiguous USA
-        const filteredFeatures = geoJson.features.filter((feature: any) => {
-          const stateName = feature.properties.name;
-          return stateName !== 'Alaska' && 
-                 stateName !== 'Hawaii' && 
-                 stateName !== 'Puerto Rico';
-        });
+        if (mapType === 'GUATEMALA') {
+          // Guatemala departments GeoJSON (local file to avoid CORS issues)
+          response = await fetch('/nr-tv-dashboard/guatemala-departments.geojson');
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Guatemala GeoJSON fetch failed:', response.status, errorText);
+            throw new Error(`Failed to fetch Guatemala map: ${response.status}`);
+          }
+          const responseText = await response.text();
+          console.log('Guatemala GeoJSON loaded successfully (first 200 chars):', responseText.substring(0, 200));
+          geoJson = JSON.parse(responseText);
+          mapName = 'GUATEMALA';
+        } else if (mapType === 'MEXICO') {
+          // Mexico states GeoJSON
+          response = await fetch('https://raw.githubusercontent.com/angelnmara/geojson/master/mexicoHigh.json');
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Mexico GeoJSON fetch failed:', response.status, errorText);
+            throw new Error(`Failed to fetch Mexico map: ${response.status}`);
+          }
+          const responseText = await response.text();
+          console.log('Mexico GeoJSON response (first 200 chars):', responseText.substring(0, 200));
+          geoJson = JSON.parse(responseText);
+          mapName = 'MEXICO';
+        } else {
+          // USA map
+          response = await fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json');
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('USA GeoJSON fetch failed:', response.status, errorText);
+            throw new Error(`Failed to fetch USA map: ${response.status}`);
+          }
+          geoJson = await response.json();
+          
+          // Filter out Alaska, Hawaii, and territories to show only contiguous USA
+          const filteredFeatures = geoJson.features.filter((feature: any) => {
+            const stateName = feature.properties.name;
+            return stateName !== 'Alaska' && 
+                   stateName !== 'Hawaii' && 
+                   stateName !== 'Puerto Rico';
+          });
+          
+          geoJson = {
+            ...geoJson,
+            features: filteredFeatures
+          };
+          mapName = 'USA';
+        }
         
-        const continentalUSA = {
-          ...geoJson,
-          features: filteredFeatures
-        };
-        
-        echarts.registerMap('USA', continentalUSA);
+        echarts.registerMap(mapName, geoJson);
         setMapReady(true);
       } catch (error) {
-        console.error('Error loading US map:', error);
+        console.error('Error loading map:', error);
         setMapReady(true); // Show component anyway
       }
     };
     
     loadMap();
-  }, []);
+  }, [mapType]);
 
   const { stateData, scatterData } = useMemo(() => {
     const stateMap = new Map<string, { count: number; lat: number; lng: number }>();
+    
+    console.log(`[AlertHeatmap ${mapType}] Processing data:`, data);
+    console.log(`[AlertHeatmap ${mapType}] Data length:`, data.length);
     
     data.forEach((item: any) => {
       const cityName = item.facet?.[0] || item.city;
       const stateInput = item.facet?.[1] || item.state;
       const alerts = item.Alerts || item['count(*)'] || 0;
       
-      if (cityName && stateInput && alerts > 0) {
-        let stateName = stateAbbrToName[stateInput.toUpperCase()] || stateInput;
-        stateName = stateName.charAt(0).toUpperCase() + stateName.slice(1).toLowerCase();
+      console.log(`[AlertHeatmap ${mapType}] Processing item:`, { cityName, stateInput, alerts, fullItem: item });
+      
+      if (stateInput && alerts > 0) {
+        let stateName = stateInput;
+        let coords: { lat: number; lng: number } | null = null;
         
-        const coords = getCityCoordinates(cityName, stateName);
+        if (mapType === 'GUATEMALA') {
+          // Handle Guatemala departments
+          const deptName = guatemalaDepartmentAbbr[stateInput.toUpperCase()] || stateInput;
+          stateName = deptName.charAt(0).toUpperCase() + deptName.slice(1).toLowerCase();
+          coords = getGuatemalaCoordinates(cityName, stateName);
+        } else if (mapType === 'MEXICO') {
+          // Handle Mexico states
+          const stateFull = mexicoStateAbbr[stateInput.toUpperCase()] || stateInput;
+          stateName = stateFull.charAt(0).toUpperCase() + stateFull.slice(1).toLowerCase();
+          coords = getMexicoCoordinates(cityName, stateName);
+        } else {
+          // Handle USA states
+          const stateFull = stateAbbrToName[stateInput.toUpperCase()] || stateInput;
+          stateName = stateFull.charAt(0).toUpperCase() + stateFull.slice(1).toLowerCase();
+          coords = getCityCoordinates(cityName, stateName);
+        }
+        
         if (!coords) return;
         
         const { lat, lng } = coords;
@@ -84,9 +143,34 @@ export function AlertHeatmap({ data }: AlertHeatmapProps) {
     }));
     
     return { stateData: stateDataArray, scatterData: stateScatterData };
-  }, [data]);
+  }, [data, mapType]);
 
   const maxAlerts = Math.max(...stateData.map(d => d.value), 100);
+
+  // Get map configuration based on type
+  const getMapConfig = () => {
+    if (mapType === 'GUATEMALA') {
+      return {
+        mapName: 'GUATEMALA',
+        zoom: 3.5,
+        center: [-90.5, 15.5]
+      };
+    } else if (mapType === 'MEXICO') {
+      return {
+        mapName: 'MEXICO',
+        zoom: 2.3,
+        center: [-102, 23.5]
+      };
+    } else {
+      return {
+        mapName: 'USA',
+        zoom: 1.2,
+        center: [-96, 37.5]
+      };
+    }
+  };
+
+  const mapConfig = getMapConfig();
 
   const getOption = () => ({
     tooltip: {
@@ -125,15 +209,15 @@ export function AlertHeatmap({ data }: AlertHeatmapProps) {
       itemHeight: 120
     },
     geo: {
-      map: 'USA',
+      map: mapConfig.mapName,
       roam: true,
       scaleLimit: {
         min: 0.8,
-        max: 3
+        max: 5
       },
       aspectScale: 0.75,
-      zoom: 1.2,
-      center: [-96, 37.5],
+      zoom: mapConfig.zoom,
+      center: mapConfig.center,
       label: {
         show: false
       },
