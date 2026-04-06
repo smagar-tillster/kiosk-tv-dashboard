@@ -77,46 +77,52 @@ export function ConfigurableLineChart({ data, config }: ConfigurableLineChartPro
 
 // Helper function to transform NewRelic data to DTO format
 function transformNewRelicData(rawData: unknown[]): LineChartDataPoint[] {
-  return rawData.map((item, index) => {
+  // Create a map of existing data by date
+  const dataMap = new Map<string, number>();
+  
+  rawData.forEach((item) => {
     const record = item as Record<string, any>;
-    
-    let dateStr = '';
-    let timestamp = 0;
-    
-    // NewRelic returns 'Date of timestamp' (with spaces and capital D)
     const dateValue = record['Date of timestamp'];
     
     if (dateValue !== undefined && dateValue !== null) {
       try {
-        // Parse the date value (should be ISO string or similar)
         const dateObj = new Date(dateValue);
-        const time = dateObj.getTime();
-        
-        // Check if date is valid
-        if (!isNaN(time)) {
-          timestamp = time;
-          // Format as MMM-DD (e.g., "Dec-14")
-          const month = dateObj.toLocaleString('en-US', { month: 'short' });
-          const day = String(dateObj.getUTCDate()).padStart(2, '0');
-          dateStr = `${month}-${day}`;
-        } else {
-          dateStr = `Day ${index + 1}`;
-          timestamp = index;
+        if (!isNaN(dateObj.getTime())) {
+          // Use YYYY-MM-DD as the key for consistency
+          const dateKey = dateObj.toISOString().split('T')[0];
+          const count = record['count(*)'] || record.count || 0;
+          dataMap.set(dateKey, count);
         }
       } catch (e) {
-        dateStr = `Day ${index + 1}`;
-        timestamp = index;
+        console.error('Error parsing date:', dateValue, e);
       }
-    } else {
-      dateStr = `Day ${index + 1}`;
-      timestamp = index;
     }
-
-    return {
+  });
+  
+  // Generate all dates for the past 7 days
+  const result: LineChartDataPoint[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    
+    const dateKey = date.toISOString().split('T')[0];
+    const count = dataMap.get(dateKey) || 0;
+    
+    // Format as MMM-DD (e.g., "Dec-14")
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${month}-${day}`;
+    
+    result.push({
       date: dateStr,
-      timestamp: timestamp,
-      value: record['count(*)'] || record.count || 0,
-      count: record['count(*)'] || record.count || 0,
-    };
-  }).sort((a, b) => a.timestamp - b.timestamp);
+      timestamp: date.getTime(),
+      value: count,
+      count: count,
+    });
+  }
+  
+  return result;
 }

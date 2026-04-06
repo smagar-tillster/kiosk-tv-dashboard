@@ -16,6 +16,8 @@ export * from './map-dashboard.config';
 // App Configs
 export * from './tenant-config';
 export * from './city-coordinates';
+export * from './guatemala-coordinates';
+export * from './mexico-coordinates';
 
 // Registry of all pages
 export const PAGE_REGISTRY = {

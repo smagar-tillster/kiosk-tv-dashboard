@@ -60,7 +60,7 @@ export class DashboardDataService {
       
       if (tenant === 'KFCGT' || tenant === 'KFCMX') {
         stores = storesResponse[0]?.["uniqueCount.ks.StoreName"] || 0;
-        kiosks = kiosksResponse[0]?.["uniqueCount.concat(ks.StoreName,ks.KioskName)"] || 0;
+        kiosks = kiosksResponse[0]?.["uniqueCount.concat(ks.StoreName, ks.KioskName)"] || 0;
       } else {
         stores = storesResponse[0]?.["uniqueCount.storeName"] || 0;
         kiosks = kiosksResponse[0]?.["uniqueCount.concat(storeName, kioskName)"] || 0;

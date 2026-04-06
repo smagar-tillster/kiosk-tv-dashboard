@@ -94,13 +94,6 @@ export default function KFCLATMDashboard() {
     KFCGT: { totalStores: 0, totalKiosks: 0, onlineStores: 0, offlineStores: 0, onlineKiosks: 0, offlineKiosks: 0 },
     KFCMX: { totalStores: 0, totalKiosks: 0, onlineStores: 0, offlineStores: 0, onlineKiosks: 0, offlineKiosks: 0 },
   });
-  const [disconnectedKiosks, setDisconnectedKiosks] = useState<{
-    KFCGT: number;
-    KFCMX: number;
-  }>({
-    KFCGT: 0,
-    KFCMX: 0,
-  });
   const [chartData, setChartData] = useState<{
     KFCGT: ChartData;
     KFCMX: ChartData;
@@ -128,18 +121,15 @@ export default function KFCLATMDashboard() {
         'KFCMX'
       );
 
-      const [kfcgtData, kfcmxData, kfcgtCharts, kfcmxCharts, kfcgtDisconnected, kfcmxDisconnected] = await Promise.all([
+      const [kfcgtData, kfcmxData, kfcgtCharts, kfcmxCharts] = await Promise.all([
         kfcgtService.fetchDashboardData('KFCGT'),
         kfcmxService.fetchDashboardData('KFCMX'),
         kfcgtService.fetchChartData('KFCGT'),
         kfcmxService.fetchChartData('KFCMX'),
-        kfcgtService.fetchDisconnectedKiosks('KFCGT'),
-        kfcmxService.fetchDisconnectedKiosks('KFCMX'),
       ]);
 
       setStats({ KFCGT: kfcgtData, KFCMX: kfcmxData });
       setChartData({ KFCGT: kfcgtCharts, KFCMX: kfcmxCharts });
-      setDisconnectedKiosks({ KFCGT: kfcgtDisconnected, KFCMX: kfcmxDisconnected });
       
       const endTime = new Date();
       const duration = ((endTime.getTime() - startTime.getTime()) / 1000).toFixed(2);
@@ -207,7 +197,7 @@ export default function KFCLATMDashboard() {
             <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
-                value={`${stats.KFCGT.totalStores} (${Math.max(0, stats.KFCGT.onlineKiosks + stats.KFCGT.offlineKiosks - disconnectedKiosks.KFCGT)})`}
+                value={`${stats.KFCGT.totalStores} (${stats.KFCGT.totalKiosks})`}
                 icon={<Store className="h-5 w-5" />}
                 loading={loading}
               />
@@ -229,10 +219,10 @@ export default function KFCLATMDashboard() {
             {/* Row 2: Map */}
             <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg overflow-hidden flex-1">
               <div className="px-3 py-2 border-b border-red-400">
-                <h3 className="text-base font-bold text-red-300">Order Failure Map (Today)</h3>
+                <h3 className="text-base font-bold text-red-300">Alerts Map</h3>
               </div>
               <div className="p-3 h-[calc(100%-48px)]">
-                <AlertHeatmap data={chartData.KFCGT.alertHeatmap} />
+                <AlertHeatmap data={chartData.KFCGT.alertHeatmap} mapType="GUATEMALA" />
               </div>
             </div>
 
@@ -291,7 +281,7 @@ export default function KFCLATMDashboard() {
             <div className="grid grid-cols-3 gap-3 items-stretch">
               <StatCard
                 title="Total Store (Kiosk)"
-                value={`${stats.KFCMX.totalStores} (${Math.max(0, stats.KFCMX.onlineKiosks + stats.KFCMX.offlineKiosks - disconnectedKiosks.KFCMX)})`}
+                value={`${stats.KFCMX.totalStores} (${stats.KFCMX.totalKiosks})`}
                 icon={<Store className="h-5 w-5" />}
                 loading={loading}
               />
@@ -313,10 +303,10 @@ export default function KFCLATMDashboard() {
             {/* Row 2: Map */}
             <div className="bg-gray-800 rounded-xl border-2 border-red-400 shadow-lg overflow-hidden flex-1">
               <div className="px-3 py-2 border-b border-red-400">
-                <h3 className="text-base font-bold text-red-300">Order Failure Map (Today)</h3>
+                <h3 className="text-base font-bold text-red-300">Alerts Map</h3>
               </div>
               <div className="p-3 h-[calc(100%-48px)]">
-                <AlertHeatmap data={chartData.KFCMX.alertHeatmap} />
+                <AlertHeatmap data={chartData.KFCMX.alertHeatmap} mapType="MEXICO" />
               </div>
             </div>
 
